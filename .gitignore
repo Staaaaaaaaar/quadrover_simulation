@@ -1,0 +1,35 @@
+# colcon / ROS 2 workspace
+build/
+install/
+log/
+.colcon/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+
+# Editor / OS
+*~
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Legacy catkin
+devel/
+.catkin_workspace
+
+# ROS runtime (local)
+.ros/
+
+# Generated / local artifacts
+*.log
+*.bag
+*.db3
+
+# Optional: large mesh assets if re-added from CMU stack
+# src/**/mesh/**/*.dae
+# src/**/mesh/**/*.stl

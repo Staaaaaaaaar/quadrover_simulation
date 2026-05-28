@@ -1,0 +1,143 @@
+<?xml version="1.0" ?>
+<sdf version="1.8">
+  <world name="cave">
+    <physics name="1ms" type="ode">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+      <real_time_update_rate>1000</real_time_update_rate>
+    </physics>
+    <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics"/>
+    <plugin filename="gz-sim-user-commands-system" name="gz::sim::systems::UserCommands"/>
+    <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster"/>
+    <plugin filename="ignition-gazebo-imu-system" name="gz::sim::systems::Imu"/>
+    <plugin filename="gz-sim-sensors-system" name="gz::sim::systems::Sensors">
+      <render_engine>ogre2</render_engine>
+    </plugin>
+
+    <gui fullscreen="0">
+      <camera name="user_camera">
+        <pose>3 -5 2.5 0 0.35 1.57</pose>
+      </camera>
+    </gui>
+
+    <light type="directional" name="sun">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.7 0.7 0.72 1</diffuse>
+      <specular>0.15 0.15 0.15 1</specular>
+      <direction>-0.4 0.2 -0.9</direction>
+    </light>
+
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+            </plane>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>100 100</size>
+            </plane>
+          </geometry>
+          <material>
+            <ambient>0.35 0.32 0.28 1</ambient>
+            <diffuse>0.35 0.32 0.28 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Ground-level cave tunnel; robot default spawn at (3, 0, 0.15) -->
+    <model name="cave_tunnel">
+      <static>true</static>
+      <pose>5 0 0 0 0 0</pose>
+      <link name="floor">
+        <pose>0 0 0.1 0 0 0</pose>
+        <collision name="floor_collision">
+          <geometry><box><size>30 4 0.2</size></box></geometry>
+        </collision>
+        <visual name="floor_visual">
+          <geometry><box><size>30 4 0.2</size></box></geometry>
+          <material><ambient>0.4 0.36 0.32 1</ambient><diffuse>0.4 0.36 0.32 1</diffuse></material>
+        </visual>
+      </link>
+      <link name="ceiling">
+        <pose>0 0 3 0 0 0</pose>
+        <collision name="ceiling_collision">
+          <geometry><box><size>30 4 0.2</size></box></geometry>
+        </collision>
+        <visual name="ceiling_visual">
+          <geometry><box><size>30 4 0.2</size></box></geometry>
+          <material><ambient>0.25 0.24 0.22 1</ambient><diffuse>0.25 0.24 0.22 1</diffuse></material>
+        </visual>
+      </link>
+      <link name="left_wall">
+        <pose>0 2 1.5 0 0 0</pose>
+        <collision name="left_wall_collision">
+          <geometry><box><size>30 0.2 3</size></box></geometry>
+        </collision>
+        <visual name="left_wall_visual">
+          <geometry><box><size>30 0.2 3</size></box></geometry>
+          <material><ambient>0.35 0.32 0.28 1</ambient><diffuse>0.35 0.32 0.28 1</diffuse></material>
+        </visual>
+      </link>
+      <link name="right_wall">
+        <pose>0 -2 1.5 0 0 0</pose>
+        <collision name="right_wall_collision">
+          <geometry><box><size>30 0.2 3</size></box></geometry>
+        </collision>
+        <visual name="right_wall_visual">
+          <geometry><box><size>30 0.2 3</size></box></geometry>
+          <material><ambient>0.35 0.32 0.28 1</ambient><diffuse>0.35 0.32 0.28 1</diffuse></material>
+        </visual>
+      </link>
+      <link name="back_wall">
+        <pose>-15 0 1.5 0 0 0</pose>
+        <collision name="back_wall_collision">
+          <geometry><box><size>0.2 4 3</size></box></geometry>
+        </collision>
+        <visual name="back_wall_visual">
+          <geometry><box><size>0.2 4 3</size></box></geometry>
+          <material><ambient>0.3 0.28 0.24 1</ambient><diffuse>0.3 0.28 0.24 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="bump_1">
+      <static>true</static>
+      <pose>3 0 0.15 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>1.5 2.0 0.3</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>1.5 2.0 0.3</size></box></geometry>
+          <material><ambient>0.45 0.38 0.3 1</ambient><diffuse>0.45 0.38 0.3 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="bump_2">
+      <static>true</static>
+      <pose>8 -0.5 0.2 0 0 0.1</pose>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>2.0 1.5 0.4</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>2.0 1.5 0.4</size></box></geometry>
+          <material><ambient>0.42 0.35 0.28 1</ambient><diffuse>0.42 0.35 0.28 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="bump_3">
+      <static>true</static>
+      <pose>12 0.3 0.12 0 0 -0.05</pose>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>1.2 2.5 0.24</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>1.2 2.5 0.24</size></box></geometry>
+          <material><ambient>0.48 0.4 0.32 1</ambient><diffuse>0.48 0.4 0.32 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+  </world>
+</sdf>

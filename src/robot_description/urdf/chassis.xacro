@@ -1,0 +1,137 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:property name="base_mass" value="30.0"/>
+  <xacro:property name="wheel_mass" value="2.0"/>
+  <xacro:property name="wheel_radius" value="0.15"/>
+  <xacro:property name="wheel_width" value="0.1"/>
+  <xacro:property name="chassis_length" value="0.6"/>
+  <xacro:property name="chassis_width" value="0.4"/>
+  <xacro:property name="chassis_height" value="0.3"/>
+  <xacro:property name="track_width" value="0.5"/>
+  <xacro:property name="wheelbase" value="0.4"/>
+
+  <xacro:macro name="wheel_inertia" params="mass radius">
+    <inertial>
+      <mass value="${mass}"/>
+      <inertia ixx="${0.5 * mass * radius * radius}" ixy="0" ixz="0"
+               iyy="${0.5 * mass * radius * radius}" iyz="0"
+               izz="${mass * radius * radius}"/>
+    </inertial>
+  </xacro:macro>
+
+  <link name="base_link">
+    <visual>
+      <geometry>
+        <box size="${chassis_length} ${chassis_width} ${chassis_height}"/>
+      </geometry>
+      <material name="red">
+        <color rgba="0.8 0.1 0.1 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="${chassis_length} ${chassis_width} ${chassis_height}"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="${base_mass}"/>
+      <inertia ixx="0.8" ixy="0" ixz="0" iyy="1.2" iyz="0" izz="1.5"/>
+    </inertial>
+  </link>
+
+  <link name="lidar_mast_link">
+    <visual>
+      <geometry>
+        <cylinder radius="0.03" length="0.35"/>
+      </geometry>
+      <material name="black">
+        <color rgba="0.1 0.1 0.1 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <cylinder radius="0.03" length="0.35"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.5"/>
+      <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
+    </inertial>
+  </link>
+
+  <joint name="lidar_mast_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="lidar_mast_link"/>
+    <origin xyz="0 0 ${chassis_height * 0.5 + 0.175}" rpy="0 0 0"/>
+  </joint>
+
+  <xacro:macro name="wheel" params="prefix x y mimic_joint:='none'">
+    <link name="${prefix}_wheel_link">
+      <visual>
+        <origin xyz="0 0 0" rpy="1.5708 0 0"/>
+        <geometry>
+          <cylinder radius="${wheel_radius}" length="${wheel_width}"/>
+        </geometry>
+        <material name="wheel_black">
+          <color rgba="0.05 0.05 0.05 1.0"/>
+        </material>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="1.5708 0 0"/>
+        <geometry>
+          <cylinder radius="${wheel_radius}" length="${wheel_width}"/>
+        </geometry>
+      </collision>
+      <xacro:wheel_inertia mass="${wheel_mass}" radius="${wheel_radius}"/>
+    </link>
+
+    <joint name="${prefix}_wheel_joint" type="${wheel_joint_type}">
+      <parent link="base_link"/>
+      <child link="${prefix}_wheel_link"/>
+      <origin xyz="${x} ${y} ${-(chassis_height * 0.5 - wheel_radius)}" rpy="0 0 0"/>
+      <axis xyz="0 1 0"/>
+      <xacro:unless value="${mimic_joint == 'none'}">
+        <mimic joint="${mimic_joint}" multiplier="1.0" offset="0.0"/>
+      </xacro:unless>
+    </joint>
+  </xacro:macro>
+
+  <gazebo reference="lidar_mast_link">
+    <material>
+      <ambient>0.1 0.1 0.1 1</ambient>
+      <diffuse>0.1 0.1 0.1 1</diffuse>
+    </material>
+  </gazebo>
+
+  <xacro:wheel prefix="left_front" x="${wheelbase * 0.5}" y="${-track_width * 0.5}"/>
+  <xacro:wheel prefix="right_front" x="${wheelbase * 0.5}" y="${track_width * 0.5}"/>
+  <xacro:wheel prefix="left_rear" x="${-wheelbase * 0.5}" y="${-track_width * 0.5}"
+               mimic_joint="left_front_wheel_joint"/>
+  <xacro:wheel prefix="right_rear" x="${-wheelbase * 0.5}" y="${track_width * 0.5}"
+               mimic_joint="right_front_wheel_joint"/>
+
+  <gazebo reference="base_link">
+    <material>
+      <ambient>0.8 0.1 0.1 1</ambient>
+      <diffuse>0.8 0.1 0.1 1</diffuse>
+    </material>
+  </gazebo>
+
+  <xacro:macro name="wheel_gazebo" params="prefix">
+    <gazebo reference="${prefix}_wheel_link">
+      <mu1>1.0</mu1>
+      <mu2>1.0</mu2>
+      <material>
+        <ambient>0.05 0.05 0.05 1</ambient>
+        <diffuse>0.05 0.05 0.05 1</diffuse>
+      </material>
+    </gazebo>
+  </xacro:macro>
+
+  <xacro:wheel_gazebo prefix="left_front"/>
+  <xacro:wheel_gazebo prefix="right_front"/>
+  <xacro:wheel_gazebo prefix="left_rear"/>
+  <xacro:wheel_gazebo prefix="right_rear"/>
+
+</robot>
