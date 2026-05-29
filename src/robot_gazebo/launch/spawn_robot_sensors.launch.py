@@ -3,7 +3,12 @@ import re
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, OpaqueFunction
+from launch.actions import (
+    DeclareLaunchArgument,
+    IncludeLaunchDescription,
+    OpaqueFunction,
+    SetEnvironmentVariable,
+)
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import Command, LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
@@ -101,7 +106,7 @@ def _launch_setup(context, *args, **kwargs):
             executable='create',
             arguments=[
                 '-world', world_name,
-                '-name', 'cave_robot',
+                '-name', 'robot',
                 '-allow_renaming', 'true',
                 '-param', 'robot_description',
                 '-x', spawn_x,
@@ -156,8 +161,15 @@ def _launch_setup(context, *args, **kwargs):
 
 def generate_launch_description():
     pkg_robot_gazebo = get_package_share_directory('robot_gazebo')
+    gz_resource_path = (
+        pkg_robot_gazebo + ':' + os.environ.get('GZ_SIM_RESOURCE_PATH', '')
+    )
 
     return LaunchDescription([
+        SetEnvironmentVariable(
+            name='GZ_SIM_RESOURCE_PATH',
+            value=gz_resource_path,
+        ),
         DeclareLaunchArgument('use_sim_time', default_value='true'),
         DeclareLaunchArgument(
             'world',
@@ -172,7 +184,7 @@ def generate_launch_description():
         DeclareLaunchArgument('use_diff_drive', default_value='false'),
         DeclareLaunchArgument('use_ros2_control', default_value='false'),
         DeclareLaunchArgument('use_joint_state_publisher', default_value='false'),
-        DeclareLaunchArgument('spawn_z', default_value='0.15'),
+        DeclareLaunchArgument('spawn_z', default_value='0.23'),
         DeclareLaunchArgument('spawn_x', default_value='0.0'),
         DeclareLaunchArgument('spawn_y', default_value='0.0'),
         DeclareLaunchArgument('rviz', default_value='false'),

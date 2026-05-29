@@ -3,7 +3,7 @@
 <package format="3">
   <name>robot_bringup</name>
   <version>0.1.0</version>
-  <description>Top-level launch files for cave robot simulation.</description>
+  <description>Top-level launch files for robot simulation.</description>
   <maintainer email="user@todo.todo">user</maintainer>
   <license>BSD</license>
 

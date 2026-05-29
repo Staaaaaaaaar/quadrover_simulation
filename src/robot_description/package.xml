@@ -3,7 +3,7 @@
 <package format="3">
   <name>robot_description</name>
   <version>0.1.0</version>
-  <description>URDF/xacro description for the four-wheeled cave exploration robot.</description>
+  <description>URDF/xacro description for the four-wheeled mobile robot.</description>
   <maintainer email="user@todo.todo">user</maintainer>
   <license>BSD</license>
 

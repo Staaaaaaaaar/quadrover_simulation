@@ -4,7 +4,7 @@ project(robot_gazebo)
 find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_python REQUIRED)
 
-install(DIRECTORY config launch worlds rviz
+install(DIRECTORY config launch worlds rviz meshes
   DESTINATION share/${PROJECT_NAME}
 )
 

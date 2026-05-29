@@ -3,7 +3,7 @@
 <package format="3">
   <name>robot_gazebo</name>
   <version>0.1.0</version>
-  <description>Gazebo Fortress simulation launch files and worlds for the cave robot.</description>
+  <description>Gazebo Fortress simulation launch files and worlds.</description>
   <maintainer email="user@todo.todo">user</maintainer>
   <license>BSD</license>
 

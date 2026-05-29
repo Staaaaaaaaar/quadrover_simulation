@@ -4,8 +4,18 @@
   <link name="lidar_link">
     <visual>
       <geometry>
+        <box size="0.08 0.08 0.02"/>
+      </geometry>
+      <origin xyz="0 0 0.045" rpy="0 0 0"/>
+      <material name="lidar_mount_gray">
+        <color rgba="0.2 0.2 0.2 1.0"/>
+      </material>
+    </visual>
+    <visual>
+      <geometry>
         <cylinder radius="0.055" length="0.07"/>
       </geometry>
+      <origin xyz="0 0 0.08" rpy="0 0 0"/>
       <material name="lidar_gray">
         <color rgba="0.3 0.3 0.3 1.0"/>
       </material>
@@ -14,17 +24,19 @@
       <geometry>
         <cylinder radius="0.055" length="0.07"/>
       </geometry>
+      <origin xyz="0 0 0.08" rpy="0 0 0"/>
     </collision>
     <inertial>
       <mass value="0.3"/>
+      <origin xyz="0 0 0.04" rpy="0 0 0"/>
       <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001"/>
     </inertial>
   </link>
 
   <joint name="lidar_joint" type="fixed">
-    <parent link="lidar_mast_link"/>
+    <parent link="base_link"/>
     <child link="lidar_link"/>
-    <origin xyz="0 0 0.21" rpy="0 0 0"/>
+    <origin xyz="0 0 ${chassis_height * 0.5 + 0.04}" rpy="0 0 0"/>
   </joint>
 
   <gazebo reference="lidar_link">
@@ -38,6 +50,7 @@
       <visualize>true</visualize>
       <topic>/lidar/scan</topic>
       <gz_frame_id>lidar_link</gz_frame_id>
+      <pose>0 0 0.08 0 0 0</pose>
       <ray>
         <scan>
           <horizontal>
@@ -55,7 +68,7 @@
         </scan>
         <range>
           <min>0.1</min>
-          <max>100.0</max>
+          <max>50.0</max>
           <resolution>0.01</resolution>
         </range>
       </ray>

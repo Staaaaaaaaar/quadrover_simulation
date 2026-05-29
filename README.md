@@ -6,7 +6,7 @@
 
 - 四轮差速底盘，支持 `/cmd_vel` 控制与 `/odom` 反馈
 - 3D LiDAR（`/lidar/points`）、IMU（`/imu/data`）、RGB/深度相机
-- 多种仿真场景：隧道/崎岖地形、封闭测试房间、空世界
+- 内置室内 example 测试场景与空世界；支持自定义 mesh 场景导入
 - RViz2 预配置（点云、图像、TF）
 - 可选 `ros2_control` 路径（需额外安装 `gz-ros2-control`）
 
@@ -17,7 +17,7 @@
 | `robot_description` | 模块化 xacro：底盘、传感器、Gazebo 插件 |
 | `robot_gazebo` | 世界文件、launch、RViz、bridge 配置 |
 | `robot_control` | ros2_control 与控制器配置（默认未启用） |
-| `robot_bringup` | 高层 launch：`sim_cave`、`sim_test_room` |
+| `robot_bringup` | 高层 launch：`sim_example` |
 
 ## 依赖
 
@@ -51,26 +51,12 @@ source install/setup.bash
 ./scripts/kill_sim.sh   # 启动前清理残留 Gazebo/bridge 进程（可选）
 ```
 
-### 复杂场景仿真（默认 RViz，无 GUI）
-
-含隧道结构与崎岖地形，适合测试运动与感知：
-
-```bash
-ros2 launch robot_bringup sim_cave.launch.py
-```
-
-### 复杂场景 + Gazebo GUI
-
-```bash
-ros2 launch robot_bringup sim_cave.launch.py gui:=true
-```
-
-### 封闭测试房间（默认 GUI + RViz）
+### 室内主要测试用例（默认 GUI + RViz）
 
 10 m × 10 m 四面围墙 + 简单障碍物：
 
 ```bash
-ros2 launch robot_bringup sim_test_room.launch.py
+ros2 launch robot_bringup sim_example.launch.py
 ```
 
 ### 传感器联调（空世界）
@@ -78,6 +64,10 @@ ros2 launch robot_bringup sim_test_room.launch.py
 ```bash
 ros2 launch robot_gazebo spawn_robot_sensors.launch.py rviz:=true gui:=true
 ```
+
+### 自定义 mesh 场景
+
+将 OBJ/MTL/贴图放入 `src/robot_gazebo/meshes/`，编写 world SDF 后通过 `world` 与 `spawn_*` 参数启动。详见 [meshes/README.md](src/robot_gazebo/meshes/README.md) 与 [docs/robot_gazebo.md](docs/robot_gazebo.md)。
 
 ### 常用 launch 参数
 
@@ -121,6 +111,7 @@ ros2 run tf2_tools view_frames
 
 - 默认渲染引擎为 **ogre2**，面向原生 Linux + 独显，建议在 Ubuntu 实机运行以获得最佳 GUI 体验。
 - 完整 `ros2_control` 驱动需安装 `ros-humble-gz-ros2-control`、`ros-humble-ros2-controllers`，并在 launch 中设置 `use_ros2_control:=true`。
+- 详细包文档见 [docs/README.md](docs/README.md)。
 
 ## 参考
 

@@ -1,0 +1,88 @@
+# robot_bringup
+
+## 概述
+
+| 属性 | 值 |
+|------|-----|
+| 版本 | 0.1.0 |
+| 构建类型 | ament_cmake |
+| 描述 | 机器人仿真的顶层 launch 入口 |
+
+本包不包含自定义节点，仅提供面向用户的场景级 launch 文件，将参数转发至 `robot_gazebo/launch/spawn_robot_sensors.launch.py`。
+
+## 文件结构
+
+```
+robot_bringup/
+├── CMakeLists.txt
+├── package.xml
+└── launch/
+    └── sim_example.launch.py        # 室内主要测试用例（10 m 封闭房间）
+```
+
+## 依赖
+
+### 运行时依赖（exec_depend）
+
+- `robot_gazebo`
+- `robot_description`
+- `robot_control`
+
+## Launch 文件
+
+### sim_example.launch.py
+
+启动 10 m × 10 m 封闭测试房间，含简单障碍物，适合算法快速验证（主要室内测试用例）。
+
+**默认参数：**
+
+| 参数 | 默认值 | 说明 |
+|------|--------|------|
+| `use_sim_time` | `true` | 使用仿真时钟 |
+| `rviz` | `true` | 启动 RViz2 |
+| `gui` | `true` | 启动 Gazebo GUI |
+| `render_engine` | `ogre2` | Gazebo 渲染后端 |
+| `world` | `robot_gazebo/worlds/example.sdf` | 世界文件 |
+| `spawn_x/y/z` | `0.0 / 0.0 / 0.23` | 机器人生成位置 |
+| `wheel_joint_type` | `continuous` | 轮子关节类型 |
+| `use_diff_drive` | `true` | 启用 Gazebo DiffDrive 插件 |
+| `use_ros2_control` | `false` | 不启用 ros2_control |
+
+**启动示例：**
+
+```bash
+ros2 launch robot_bringup sim_example.launch.py
+```
+
+## 自定义 mesh 场景
+
+仓库内仅提交 `sim_example` 作为标准测试入口。若需加载本地 mesh 世界：
+
+- 直接使用 `spawn_robot_sensors.launch.py` 并传入 `world` / `spawn_*` 参数；或
+- 复制 `sim_example.launch.py` 为本地 launch（勿提交大型 mesh 与专用 world），修改默认 world 与生成位姿。
+
+详见 [robot_gazebo.md — 自定义 mesh 场景](robot_gazebo.md#自定义-mesh-场景)。
+
+## 启动的组件
+
+`sim_example` 通过 `IncludeLaunchDescription` 调用 `robot_gazebo/spawn_robot_sensors.launch.py`，并固定传入 `use_joint_state_publisher='false'`（由 Gazebo DiffDrive 的 JointStatePublisher 提供关节状态）。
+
+实际启动的进程包括：
+
+1. Gazebo Sim（`ros_gz_sim/gz_sim.launch.py`）
+2. `robot_state_publisher`
+3. `ros_gz_sim/create`（生成机器人模型）
+4. `ros_gz_bridge/parameter_bridge`（传感器与控制桥接）
+5. RViz2（可选）
+
+## 节点
+
+本包无自定义节点。
+
+## 话题 / 服务
+
+本包不直接发布或订阅任何话题，所有 ROS 接口由被包含的 `robot_gazebo` launch 提供。参见 [robot_gazebo.md](robot_gazebo.md) 和 [README.md](README.md) 中的话题总览。
+
+## CMake 目标
+
+仅安装 `launch/` 目录，无编译目标。

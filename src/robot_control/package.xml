@@ -3,7 +3,7 @@
 <package format="3">
   <name>robot_control</name>
   <version>0.1.0</version>
-  <description>ros2_control configuration for the cave exploration robot.</description>
+  <description>ros2_control configuration for the mobile robot.</description>
   <maintainer email="user@todo.todo">user</maintainer>
   <license>BSD</license>
 

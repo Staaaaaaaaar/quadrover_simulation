@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build and run the cave robot simulation without miniconda Python.
+# Build the robot simulation workspace without miniconda Python.
 set -eo pipefail
 
 export PATH="/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/opt/ros/humble/bin"
@@ -14,6 +14,5 @@ colcon build --packages-select robot_description robot_control robot_gazebo robo
 
 source install/setup.bash
 echo "Build complete. Examples:"
-echo "  ros2 launch robot_bringup sim_cave.launch.py gui:=true"
-echo "  ros2 launch robot_bringup sim_test_room.launch.py"
+echo "  ros2 launch robot_bringup sim_example.launch.py gui:=true"
 echo "  ros2 launch robot_gazebo spawn_robot_sensors.launch.py rviz:=true gui:=true"
