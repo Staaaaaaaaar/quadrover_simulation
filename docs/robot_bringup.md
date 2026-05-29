@@ -26,7 +26,6 @@ robot_bringup/
 
 - `robot_gazebo`
 - `robot_description`
-- `robot_control`
 
 ## Launch 文件
 
@@ -46,7 +45,6 @@ robot_bringup/
 | `spawn_x/y/z` | `0.0 / 0.0 / 0.23` | 机器人生成位置 |
 | `wheel_joint_type` | `continuous` | 轮子关节类型 |
 | `use_diff_drive` | `true` | 启用 Gazebo DiffDrive 插件 |
-| `use_ros2_control` | `false` | 不启用 ros2_control |
 
 **启动示例：**
 

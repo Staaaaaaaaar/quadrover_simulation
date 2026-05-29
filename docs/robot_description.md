@@ -42,15 +42,13 @@ robot_description/
 |------|--------|------|
 | `wheel_joint_type` | `fixed` | 轮子关节类型（`fixed` 或 `continuous`） |
 | `use_diff_drive` | `false` | 是否插入 Gazebo DiffDrive 插件 |
-| `use_ros2_control` | `false` | 是否加载 `robot_control` 的 ros2_control 块 |
 
 **xacro 调用示例：**
 
 ```bash
 xacro src/robot_description/urdf/robot.urdf.xacro \
   wheel_joint_type:=continuous \
-  use_diff_drive:=true \
-  use_ros2_control:=false
+  use_diff_drive:=true
 ```
 
 ## 运动学树（TF 树）
@@ -156,10 +154,6 @@ base_link
 | `/camera/color/camera_info` | `sensor_msgs/CameraInfo` | 发布 | RGB 相机 |
 | `/camera/depth/image_raw` | `sensor_msgs/Image` | 发布 | 深度相机 |
 | `/camera/depth/camera_info` | `sensor_msgs/CameraInfo` | 发布 | 深度相机 |
-
-## ros2_control 集成
-
-当 `use_ros2_control=true` 时，主入口会 include `robot_control/urdf/robot.ros2_control.xacro` 并实例化 `<xacro:robot_ros2_control/>`。详见 [robot_control.md](robot_control.md)。
 
 ## 节点
 

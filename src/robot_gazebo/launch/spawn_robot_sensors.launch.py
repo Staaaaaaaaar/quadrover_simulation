@@ -55,7 +55,6 @@ def _launch_setup(context, *args, **kwargs):
     use_sim_time = LaunchConfiguration('use_sim_time').perform(context) == 'true'
     wheel_joint_type = LaunchConfiguration('wheel_joint_type').perform(context)
     use_diff_drive = LaunchConfiguration('use_diff_drive').perform(context)
-    use_ros2_control = LaunchConfiguration('use_ros2_control').perform(context)
     spawn_z = LaunchConfiguration('spawn_z').perform(context)
     spawn_x = LaunchConfiguration('spawn_x').perform(context)
     spawn_y = LaunchConfiguration('spawn_y').perform(context)
@@ -75,7 +74,6 @@ def _launch_setup(context, *args, **kwargs):
         ]),
         f' wheel_joint_type:={wheel_joint_type}',
         f' use_diff_drive:={use_diff_drive}',
-        f' use_ros2_control:={use_ros2_control}',
     ])
 
     render_flags = f'--render-engine {render_engine}'
@@ -182,7 +180,6 @@ def generate_launch_description():
         ),
         DeclareLaunchArgument('wheel_joint_type', default_value='fixed'),
         DeclareLaunchArgument('use_diff_drive', default_value='false'),
-        DeclareLaunchArgument('use_ros2_control', default_value='false'),
         DeclareLaunchArgument('use_joint_state_publisher', default_value='false'),
         DeclareLaunchArgument('spawn_z', default_value='0.23'),
         DeclareLaunchArgument('spawn_x', default_value='0.0'),

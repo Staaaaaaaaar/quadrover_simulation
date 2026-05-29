@@ -8,8 +8,8 @@ unset CONDA_PREFIX CONDA_DEFAULT_ENV CONDA_SHLVL CONDA_PYTHON_EXE
 source /opt/ros/humble/setup.bash
 cd "$(dirname "$0")/.."
 
-colcon build --packages-select robot_description robot_control robot_gazebo robot_bringup \
-  --allow-overriding robot_description robot_control robot_gazebo robot_bringup \
+colcon build --packages-select robot_description robot_gazebo robot_bringup \
+  --allow-overriding robot_description robot_gazebo robot_bringup \
   --cmake-args -DPython3_EXECUTABLE=/usr/bin/python3 "$@"
 
 source install/setup.bash

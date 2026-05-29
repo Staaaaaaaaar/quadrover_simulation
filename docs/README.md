@@ -4,23 +4,15 @@
 
 ## 工作空间概览
 
-基于 **ROS 2 Humble** + **Gazebo Fortress**（`ros_gz`）的四轮差速驱动移动机器人仿真环境，集成 3D LiDAR、IMU、RGB-D 相机，适用于传感器联调与导航算法开发。
+基于 **ROS 2 Humble** + **Gazebo Fortress**（`ros_gz`）的四轮差速驱动移动机器人仿真环境，集成 3D LiDAR、IMU、RGB-D 相机，适用于传感器联调与导航算法开发。底盘由 **Gazebo DiffDrive 插件**驱动。
 
 ## 包依赖关系
 
 ```
 robot_bringup          ← 顶层入口（场景 launch）
     └── robot_gazebo   ← Gazebo 仿真、桥接、世界文件
-            ├── robot_description   ← URDF/xacro 机器人模型
-            └── robot_control       ← ros2_control 配置（可选）
+            └── robot_description   ← URDF/xacro 机器人模型
 ```
-
-## 默认驱动模式
-
-| 模式 | 参数 | 说明 |
-|------|------|------|
-| Gazebo DiffDrive（默认） | `use_diff_drive:=true` | 由 Gazebo 插件直接驱动，无需 ros2_control |
-| ros2_control（可选） | `use_ros2_control:=true` | 需安装 `gz-ros2-control`，并关闭 DiffDrive |
 
 ## 各包文档
 
@@ -29,7 +21,6 @@ robot_bringup          ← 顶层入口（场景 launch）
 | `robot_bringup` | [robot_bringup.md](robot_bringup.md) | 高层场景 launch（example） |
 | `robot_description` | [robot_description.md](robot_description.md) | 模块化 URDF/xacro 机器人描述 |
 | `robot_gazebo` | [robot_gazebo.md](robot_gazebo.md) | Gazebo 世界、launch、ROS-GZ 桥接 |
-| `robot_control` | [robot_control.md](robot_control.md) | ros2_control 硬件接口与控制器配置 |
 
 ## 跨包 ROS 话题总览（默认配置）
 

@@ -3,11 +3,9 @@
 
   <xacro:arg name="wheel_joint_type" default="fixed"/>
   <xacro:arg name="use_diff_drive" default="false"/>
-  <xacro:arg name="use_ros2_control" default="false"/>
 
   <xacro:property name="wheel_joint_type" value="$(arg wheel_joint_type)"/>
   <xacro:property name="use_diff_drive" value="$(arg use_diff_drive)"/>
-  <xacro:property name="use_ros2_control" value="$(arg use_ros2_control)"/>
   <xacro:property name="chassis_length" value="0.6"/>
 
   <xacro:include filename="chassis.xacro"/>
@@ -15,10 +13,5 @@
   <xacro:include filename="lidar.xacro"/>
   <xacro:include filename="camera.xacro"/>
   <xacro:include filename="gazebo_plugins.xacro"/>
-
-  <xacro:if value="$(arg use_ros2_control)">
-    <xacro:include filename="$(find robot_control)/urdf/robot.ros2_control.xacro"/>
-    <xacro:robot_ros2_control/>
-  </xacro:if>
 
 </robot>

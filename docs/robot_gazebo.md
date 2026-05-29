@@ -36,7 +36,7 @@ robot_gazebo/
 
 ### 运行时依赖（exec_depend）
 
-- `robot_description`, `robot_control`
+- `robot_description`
 - `ros_gz_sim`, `ros_gz_bridge`, `ros_gz_image`
 - `robot_state_publisher`, `rclpy`, `xacro`, `rviz2`
 
@@ -54,8 +54,7 @@ robot_gazebo/
 | `world` | `worlds/empty.sdf` | SDF 世界路径 |
 | `world_name` | `''` | Gazebo world 名称（空则自动从 SDF 解析） |
 | `wheel_joint_type` | `fixed` | 传给 xacro |
-| `use_diff_drive` | `false` | 传给 xacro |
-| `use_ros2_control` | `false` | 传给 xacro |
+| `use_diff_drive` | `false` | 传给 xacro，启用 Gazebo DiffDrive 插件 |
 | `use_joint_state_publisher` | `false` | 启动空 joint_states 发布器 |
 | `spawn_x/y/z` | `0.0 / 0.0 / 0.23` | 生成位置 |
 | `rviz` | `false` | 启动 RViz2 |

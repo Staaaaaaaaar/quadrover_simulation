@@ -1,14 +1,13 @@
 # Robot Simulation
 
-基于 **ROS 2 Humble** 与 **Gazebo Fortress** 的四轮移动机器人仿真环境，集成 LiDAR、IMU、RGB-D 相机与差速驱动，适用于原生 Linux 下的传感器联调与导航算法开发。
+基于 **ROS 2 Humble** 与 **Gazebo Fortress** 的四轮移动机器人仿真环境，集成 LiDAR、IMU、RGB-D 相机与 Gazebo DiffDrive 差速驱动，适用于原生 Linux 下的传感器联调与导航算法开发。
 
 ## 功能概览
 
-- 四轮差速底盘，支持 `/cmd_vel` 控制与 `/odom` 反馈
+- 四轮差速底盘，支持 `/cmd_vel` 控制与 `/odom` 反馈（Gazebo DiffDrive 插件）
 - 3D LiDAR（`/lidar/points`）、IMU（`/imu/data`）、RGB/深度相机
 - 内置室内 example 测试场景与空世界；支持自定义 mesh 场景导入
 - RViz2 预配置（点云、图像、TF）
-- 可选 `ros2_control` 路径（需额外安装 `gz-ros2-control`）
 
 ## 包结构
 
@@ -16,7 +15,6 @@
 |---|---|
 | `robot_description` | 模块化 xacro：底盘、传感器、Gazebo 插件 |
 | `robot_gazebo` | 世界文件、launch、RViz、bridge 配置 |
-| `robot_control` | ros2_control 与控制器配置（默认未启用） |
 | `robot_bringup` | 高层 launch：`sim_example` |
 
 ## 依赖
@@ -110,7 +108,6 @@ ros2 run tf2_tools view_frames
 ## 说明
 
 - 默认渲染引擎为 **ogre2**，面向原生 Linux + 独显，建议在 Ubuntu 实机运行以获得最佳 GUI 体验。
-- 完整 `ros2_control` 驱动需安装 `ros-humble-gz-ros2-control`、`ros-humble-ros2-controllers`，并在 launch 中设置 `use_ros2_control:=true`。
 - 详细包文档见 [docs/README.md](docs/README.md)。
 
 ## 参考
