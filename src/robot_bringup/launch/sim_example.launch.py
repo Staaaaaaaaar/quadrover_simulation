@@ -12,10 +12,10 @@ def generate_launch_description():
 
     return LaunchDescription([
         DeclareLaunchArgument('use_sim_time', default_value='true'),
-        DeclareLaunchArgument('rviz', default_value='true'),
+        DeclareLaunchArgument('rviz', default_value='false'),
         DeclareLaunchArgument(
             'gui',
-            default_value='true',
+            default_value='false',
             description='Launch Gazebo GUI',
         ),
         DeclareLaunchArgument(

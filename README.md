@@ -49,12 +49,12 @@ source install/setup.bash
 ./scripts/kill_sim.sh   # 启动前清理残留 Gazebo/bridge 进程（可选）
 ```
 
-### 室内主要测试用例（默认 GUI + RViz）
+### 室内主要测试用例
 
-10 m × 10 m 四面围墙 + 简单障碍物：
+10 m × 10 m 四面围墙 + 简单障碍物（默认无 GUI，以下示例开启 Gazebo GUI 与 RViz2）：
 
 ```bash
-ros2 launch robot_bringup sim_example.launch.py
+ros2 launch robot_bringup sim_example.launch.py rviz:=true gui:=true
 ```
 
 ### 传感器联调（空世界）
@@ -71,8 +71,8 @@ ros2 launch robot_gazebo spawn_robot_sensors.launch.py rviz:=true gui:=true
 
 | 参数 | 默认值 | 说明 |
 |---|---|---|
-| `gui` | 因 launch 而异 | 是否打开 Gazebo GUI |
-| `rviz` | 因 launch 而异 | 是否启动 RViz2 |
+| `gui` | `false` | 是否打开 Gazebo GUI |
+| `rviz` | `false` | 是否启动 RViz2 |
 | `render_engine` | `ogre2` | 渲染后端（Fortress 默认） |
 | `use_diff_drive` | `true` | Gazebo DiffDrive 插件 |
 | `spawn_x/y/z` | 因场景而异 | 机器人初始位姿 |
