@@ -18,6 +18,7 @@ from launch_ros.substitutions import FindPackageShare
 def _bridge_arguments(use_diff_drive):
     args = [
         '/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock',
+        '/odom/ground_truth@nav_msgs/msg/Odometry[gz.msgs.Odometry',
         '/imu/data@sensor_msgs/msg/Imu[gz.msgs.IMU',
         '/lidar/scan/points@sensor_msgs/msg/PointCloud2[gz.msgs.PointCloudPacked',
         '/camera/color/image_raw@sensor_msgs/msg/Image[gz.msgs.Image',
@@ -28,8 +29,7 @@ def _bridge_arguments(use_diff_drive):
     if use_diff_drive == 'true':
         args.extend([
             '/cmd_vel@geometry_msgs/msg/Twist]gz.msgs.Twist',
-            '/odom@nav_msgs/msg/Odometry[gz.msgs.Odometry',
-            '/tf@tf2_msgs/msg/TFMessage[gz.msgs.Pose_V',
+            '/odom/wheel@nav_msgs/msg/Odometry[gz.msgs.Odometry',
             '/joint_states@sensor_msgs/msg/JointState[gz.msgs.Model',
         ])
     return args

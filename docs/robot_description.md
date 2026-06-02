@@ -128,7 +128,7 @@ base_link
 | 右轮关节 | `right_front_wheel_joint`, `right_rear_wheel_joint` |
 | 轮距 / 半径 | 0.5 m / 0.15 m |
 | 订阅话题 | `/cmd_vel` (`geometry_msgs/Twist`) |
-| 发布话题 | `/odom`, `/tf` |
+| 发布话题 | `/odom/wheel`（TF 发布到内部话题，不桥接） |
 | 坐标系 | `odom` → `base_link` |
 | 线速度限制 | ±1.0 m/s |
 | 角速度限制 | ±1.5 rad/s |
@@ -145,8 +145,8 @@ base_link
 | 话题 | 类型 | 方向 | 来源 |
 |------|------|------|------|
 | `/cmd_vel` | `geometry_msgs/Twist` | 订阅 | DiffDrive 插件 |
-| `/odom` | `nav_msgs/Odometry` | 发布 | DiffDrive 插件 |
-| `/tf` | — | 发布 | DiffDrive 插件（`odom` → `base_link`） |
+| `/odom/wheel` | `nav_msgs/Odometry` | 发布 | DiffDrive 插件 |
+| `/odom/ground_truth` | `nav_msgs/Odometry` | 发布 | OdometryPublisher 插件（真值，map→base_link） |
 | `/joint_states` | `sensor_msgs/JointState` | 发布 | JointStatePublisher 插件 |
 | `/imu/data` | `sensor_msgs/Imu` | 发布 | IMU 传感器 |
 | `/lidar/scan/points` | `sensor_msgs/PointCloud2` | 发布 | GPU LiDAR |
