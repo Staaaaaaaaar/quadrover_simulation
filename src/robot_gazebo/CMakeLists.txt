@@ -8,7 +8,9 @@ install(DIRECTORY config launch worlds rviz meshes
   DESTINATION share/${PROJECT_NAME}
 )
 
-install(PROGRAMS scripts/static_joint_state_publisher.py
+install(PROGRAMS
+  scripts/static_joint_state_publisher.py
+  scripts/map_tf_broadcaster.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

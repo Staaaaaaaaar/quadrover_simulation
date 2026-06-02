@@ -64,6 +64,7 @@ def _launch_setup(context, *args, **kwargs):
     use_joint_state_publisher = (
         LaunchConfiguration('use_joint_state_publisher').perform(context) == 'true'
     )
+    publish_map_tf = LaunchConfiguration('publish_map_tf').perform(context) == 'true'
 
     robot_description = Command([
         'xacro ',
@@ -128,6 +129,17 @@ def _launch_setup(context, *args, **kwargs):
             output='screen',
         ),
     ]
+
+    if publish_map_tf:
+        nodes.append(
+            Node(
+                package='robot_gazebo',
+                executable='map_tf_broadcaster.py',
+                name='map_tf_broadcaster',
+                output='screen',
+                parameters=[{'use_sim_time': use_sim_time}],
+            ),
+        )
 
     if use_joint_state_publisher:
         nodes.append(
@@ -194,6 +206,15 @@ def generate_launch_description():
             'render_engine',
             default_value='ogre2',
             description='Gazebo rendering backend (ogre2 is the Fortress default)',
+        ),
+        DeclareLaunchArgument(
+            'publish_map_tf',
+            default_value='true',
+            description=(
+                'Publish map frame TF from ground truth. '
+                'If odom→base_link exists, publishes map→odom; '
+                'otherwise publishes map→base_link directly.'
+            ),
         ),
         OpaqueFunction(function=_launch_setup),
     ])

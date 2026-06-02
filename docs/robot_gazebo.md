@@ -26,6 +26,7 @@ robot_gazebo/
 ├── rviz/
 │   └── robot.rviz                    # RViz2 预配置
 ├── scripts/
+│   ├── map_tf_broadcaster.py          # 自适应 map TF 广播
 │   └── static_joint_state_publisher.py  # 空 joint_states 发布器
 └── worlds/
     ├── empty.sdf                     # 空世界
@@ -60,6 +61,7 @@ robot_gazebo/
 | `rviz` | `false` | 启动 RViz2 |
 | `gui` | `false` | Gazebo GUI |
 | `render_engine` | `ogre2` | 渲染引擎 |
+| `publish_map_tf` | `true` | 从真值发布 map TF（有 odom→base_link 时发 map→odom，否则 map→base_link） |
 
 **启动示例：**
 
@@ -78,10 +80,35 @@ ros2 launch robot_gazebo spawn_robot_sensors.launch.py \
 | 2 | robot_state_publisher | `robot_state_publisher/robot_state_publisher` |
 | 3 | 机器人生成 | `ros_gz_sim/create` |
 | 4 | ROS-GZ 桥接 | `ros_gz_bridge/parameter_bridge` |
-| 5 | *(可选)* static_joint_state_publisher | `robot_gazebo/static_joint_state_publisher.py` |
-| 6 | *(可选)* RViz2 | `rviz2/rviz2` |
+| 5 | *(可选)* map_tf_broadcaster | `robot_gazebo/map_tf_broadcaster.py` |
+| 6 | *(可选)* static_joint_state_publisher | `robot_gazebo/static_joint_state_publisher.py` |
+| 7 | *(可选)* RViz2 | `rviz2/rviz2` |
 
 ## 自定义节点
+
+### map_tf_broadcaster.py
+
+从 `/odom/ground_truth` 发布 map 帧 TF，运行时检测 `odom→base_link` 是否存在：
+
+- **存在**：计算并发布 `map→odom`（`T_map_odom = T_map_base × inv(T_odom_base)`）
+- **不存在**：直接发布 `map→base_link`
+
+| 属性 | 值 |
+|------|-----|
+| 节点名 | `map_tf_broadcaster` |
+| 语言 | Python 3 |
+
+**订阅：**
+
+| 话题 | 类型 | 说明 |
+|------|------|------|
+| `/odom/ground_truth` | `nav_msgs/Odometry` | 仿真真值（map→base_link） |
+
+**发布：**
+
+| TF | 说明 |
+|----|------|
+| `map→odom` 或 `map→base_link` | 取决于 odom→base_link 是否可用 |
 
 ### static_joint_state_publisher.py
 
@@ -144,6 +171,7 @@ ros2 launch robot_gazebo spawn_robot_sensors.launch.py \
 | `/camera/color/camera_info` | GZ→ROS | `gz.msgs.CameraInfo` ↔ `sensor_msgs/CameraInfo` |
 | `/camera/depth/image_raw` | GZ→ROS | `gz.msgs.Image` ↔ `sensor_msgs/Image` |
 | `/camera/depth/camera_info` | GZ→ROS | `gz.msgs.CameraInfo` ↔ `sensor_msgs/CameraInfo` |
+| `/odom/ground_truth` | GZ→ROS | `gz.msgs.Odometry` ↔ `nav_msgs/Odometry` |
 
 > LiDAR 点云经 remapping：`/lidar/scan/points` → `/lidar/points`
 
@@ -152,9 +180,10 @@ ros2 launch robot_gazebo spawn_robot_sensors.launch.py \
 | ROS 话题 | 方向 | 类型 |
 |----------|------|------|
 | `/cmd_vel` | ROS→GZ | `geometry_msgs/Twist` |
-| `/odom` | GZ→ROS | `nav_msgs/Odometry` |
-| `/tf` | GZ→ROS | `tf2_msgs/TFMessage` |
+| `/odom/wheel` | GZ→ROS | `nav_msgs/Odometry` |
 | `/joint_states` | GZ→ROS | `sensor_msgs/JointState` |
+
+> DiffDrive 内部 TF 发布到 `/odom/wheel/tf_internal`，不桥接到 ROS；`odom→base_link` 由 `four_wheel_localization` 发布。
 
 ### rviz2（可选）
 
@@ -227,21 +256,24 @@ ros2 launch robot_gazebo spawn_robot_sensors.launch.py \
 
 ```
                     ┌─────────────────┐
-  /cmd_vel ────────►│ Gazebo DiffDrive│──────► /odom, /tf (GZ)
+  /cmd_vel ────────►│ Gazebo DiffDrive│──────► /odom/wheel (GZ)
   (ROS)             │     Plugin      │──────► /joint_states (GZ)
                     └────────┬────────┘
                              │ parameter_bridge
                              ▼
-  /cmd_vel, /odom, /tf, /joint_states ────────► ROS 侧
+  /cmd_vel, /odom/wheel, /joint_states ────────► ROS 侧
 
+  Gazebo OdometryPublisher ──bridge──► /odom/ground_truth
   Gazebo Sensors ──bridge──► /imu/data, /lidar/points,
                              /camera/color/*, /camera/depth/*, /clock
 
+  /odom/wheel ──► four_wheel_localization ──► /odom, odom→base_link TF
+  /odom/ground_truth ──► map_tf_broadcaster ──► map→odom 或 map→base_link TF
   /joint_states ──► robot_state_publisher ──► /tf, /tf_static
 ```
 
 ## CMake 目标
 
 - 安装 `config/`, `launch/`, `worlds/`, `rviz/`, `meshes/` 目录
-- 安装 `scripts/static_joint_state_publisher.py` 至 `lib/robot_gazebo`
+- 安装 `scripts/static_joint_state_publisher.py`、`scripts/map_tf_broadcaster.py` 至 `lib/robot_gazebo`
 - 无 C++ 编译目标
