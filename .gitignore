@@ -33,3 +33,14 @@ devel/
 # Optional: large mesh assets if re-added from CMU stack
 # src/**/mesh/**/*.dae
 # src/**/mesh/**/*.stl
+
+# Local-only assets (mesh binaries, private launch/worlds)
+docs/code-review.md
+src/robot_gazebo/meshes/**/*
+!src/robot_gazebo/meshes/.gitkeep
+!src/robot_gazebo/meshes/README.md
+src/robot_gazebo/worlds/*.sdf
+!src/robot_gazebo/worlds/empty.sdf
+!src/robot_gazebo/worlds/example.sdf
+src/robot_bringup/launch/sim_*.launch.py
+!src/robot_bringup/launch/sim_example.launch.py
