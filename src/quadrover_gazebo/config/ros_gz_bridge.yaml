@@ -34,8 +34,8 @@
   gz_type_name: "gz.msgs.CameraInfo"
   direction: GZ_TO_ROS
 
-- ros_topic_name: "/odom/ground_truth"
-  gz_topic_name: "/odom/ground_truth"
+- ros_topic_name: "/loc/gazebo"
+  gz_topic_name: "/loc/gazebo"
   ros_type_name: "nav_msgs/msg/Odometry"
   gz_type_name: "gz.msgs.Odometry"
   direction: GZ_TO_ROS

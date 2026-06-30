@@ -145,8 +145,8 @@ base_link
 | 话题 | 类型 | 方向 | 来源 |
 |------|------|------|------|
 | `/cmd_vel` | `geometry_msgs/Twist` | 订阅 | DiffDrive 插件 |
-| `/odom/wheel` | `nav_msgs/Odometry` | 发布 | DiffDrive 插件 |
-| `/odom/ground_truth` | `nav_msgs/Odometry` | 发布 | OdometryPublisher 插件（真值，map→base_link） |
+| `/odom/wheel` | `nav_msgs/Odometry` | 发布 | DiffDrive 插件（`odom` → `base_link`） |
+| `/loc/gazebo` | `nav_msgs/Odometry` | 发布 | OdometryPublisher 插件（`map` → `base_link` 真值） |
 | `/joint_states` | `sensor_msgs/JointState` | 发布 | JointStatePublisher 插件 |
 | `/imu/data` | `sensor_msgs/Imu` | 发布 | IMU 传感器 |
 | `/lidar/scan/points` | `sensor_msgs/PointCloud2` | 发布 | GPU LiDAR |

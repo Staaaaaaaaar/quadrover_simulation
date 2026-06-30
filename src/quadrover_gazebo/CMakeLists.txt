@@ -10,7 +10,6 @@ install(DIRECTORY config launch worlds rviz meshes
 
 install(PROGRAMS
   scripts/static_joint_state_publisher.py
-  scripts/map_tf_broadcaster.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

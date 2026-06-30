@@ -8,7 +8,7 @@
 | 构建类型 | ament_cmake |
 | 描述 | Quadrover 仿真的顶层 launch 入口 |
 
-本包不包含自定义节点，提供面向用户的场景级 launch 文件，将参数转发至 `quadrover_gazebo` 与 `quadrover_localization`。
+本包不包含自定义节点，提供面向用户的场景级 launch 文件，将参数转发至 `quadrover_gazebo`。
 
 ## 文件结构
 
@@ -26,7 +26,6 @@ quadrover_bringup/
 
 - `quadrover_gazebo`
 - `quadrover_description`
-- `quadrover_localization`
 
 ## Launch 文件
 
@@ -46,14 +45,11 @@ quadrover_bringup/
 | `spawn_x/y/z` | `0.0 / 0.0 / 0.23` | 机器人生成位置 |
 | `wheel_joint_type` | `continuous` | 轮子关节类型 |
 | `use_diff_drive` | `true` | 启用 Gazebo DiffDrive 插件 |
-| `publish_map_tf` | `true` | 发布 map 帧 TF |
-| `use_localization` | `true` | 启动 quadrover_localization |
 
 **启动示例：**
 
 ```bash
 ros2 launch quadrover_bringup sim_example.launch.py rviz:=true gui:=true
-ros2 launch quadrover_bringup sim_example.launch.py use_localization:=false
 ```
 
 ## 自定义 mesh 场景
@@ -69,8 +65,7 @@ ros2 launch quadrover_bringup sim_example.launch.py use_localization:=false
 
 `sim_example` 通过 `IncludeLaunchDescription` 调用：
 
-1. `quadrover_gazebo/spawn_quadrover_sensors.launch.py`（Gazebo + 传感器 + map TF）
-2. `quadrover_localization/localization.launch.py`（可选，默认启用）
+1. `quadrover_gazebo/spawn_quadrover_sensors.launch.py`（Gazebo + 传感器桥接）
 
 实际启动的进程包括：
 
@@ -78,9 +73,7 @@ ros2 launch quadrover_bringup sim_example.launch.py use_localization:=false
 2. `robot_state_publisher`
 3. `ros_gz_sim/create`（生成机器人模型）
 4. `ros_gz_bridge/parameter_bridge`（传感器与控制桥接）
-5. `map_tf_broadcaster`（可选，默认启用）
-6. `odom_relay`（可选，默认启用）
-7. RViz2（可选）
+5. RViz2（可选）
 
 ## 节点
 
@@ -88,7 +81,7 @@ ros2 launch quadrover_bringup sim_example.launch.py use_localization:=false
 
 ## 话题 / 服务
 
-本包不直接发布或订阅任何话题，所有 ROS 接口由被包含的 launch 提供。参见 [quadrover_localization.md](quadrover_localization.md)、[quadrover_gazebo.md](quadrover_gazebo.md) 和 [README.md](README.md)。
+本包不直接发布或订阅任何话题，所有 ROS 接口由被包含的 launch 提供。参见 [quadrover_gazebo.md](quadrover_gazebo.md) 和 [README.md](README.md)。
 
 ## CMake 目标
 

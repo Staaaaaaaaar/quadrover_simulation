@@ -1,6 +1,0 @@
-odom_relay:
-  ros__parameters:
-    input_topic: /odom/wheel
-    output_topic: /odom
-    odom_frame: odom
-    base_frame: base_link

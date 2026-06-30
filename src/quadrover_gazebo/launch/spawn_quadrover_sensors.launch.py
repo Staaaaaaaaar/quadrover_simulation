@@ -18,7 +18,7 @@ from launch_ros.substitutions import FindPackageShare
 def _bridge_arguments(use_diff_drive):
     args = [
         '/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock',
-        '/odom/ground_truth@nav_msgs/msg/Odometry[gz.msgs.Odometry',
+        '/loc/gazebo@nav_msgs/msg/Odometry[gz.msgs.Odometry',
         '/imu/data@sensor_msgs/msg/Imu[gz.msgs.IMU',
         '/lidar/scan/points@sensor_msgs/msg/PointCloud2[gz.msgs.PointCloudPacked',
         '/camera/color/image_raw@sensor_msgs/msg/Image[gz.msgs.Image',
@@ -64,7 +64,6 @@ def _launch_setup(context, *args, **kwargs):
     use_joint_state_publisher = (
         LaunchConfiguration('use_joint_state_publisher').perform(context) == 'true'
     )
-    publish_map_tf = LaunchConfiguration('publish_map_tf').perform(context) == 'true'
 
     quadrover_description = Command([
         'xacro ',
@@ -129,17 +128,6 @@ def _launch_setup(context, *args, **kwargs):
             output='screen',
         ),
     ]
-
-    if publish_map_tf:
-        nodes.append(
-            Node(
-                package='quadrover_gazebo',
-                executable='map_tf_broadcaster.py',
-                name='map_tf_broadcaster',
-                output='screen',
-                parameters=[{'use_sim_time': use_sim_time}],
-            ),
-        )
 
     if use_joint_state_publisher:
         nodes.append(
@@ -206,15 +194,6 @@ def generate_launch_description():
             'render_engine',
             default_value='ogre2',
             description='Gazebo rendering backend (ogre2 is the Fortress default)',
-        ),
-        DeclareLaunchArgument(
-            'publish_map_tf',
-            default_value='true',
-            description=(
-                'Publish map frame TF from ground truth. '
-                'If odom→base_link exists, publishes map→odom; '
-                'otherwise publishes map→base_link directly.'
-            ),
         ),
         OpaqueFunction(function=_launch_setup),
     ])

@@ -29,6 +29,9 @@ devel/
 *.log
 *.bag
 *.db3
+frames*.gv
+frames*.pdf
+frames.pdf
 
 # Optional: large mesh assets if re-added from CMU stack
 # src/**/mesh/**/*.dae

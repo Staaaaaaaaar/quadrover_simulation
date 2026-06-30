@@ -4,8 +4,8 @@
 
 ## 功能概览
 
-- 四轮差速底盘，支持 `/cmd_vel` 控制与 `/odom` 反馈（经 `quadrover_localization` 融合发布）
-- 里程计源统一在 `/odom/*` 命名空间（轮式、真值；后续可扩展 RTK、SLAM、IMU 等）
+- 四轮差速底盘，支持 `/cmd_vel` 控制与 `/odom/wheel` 轮式里程计
+- 仿真真值位姿发布在 `/loc/gazebo`（`map` → `base_link`）
 - 3D LiDAR（`/lidar/points`）、IMU（`/imu/data`）、RGB/深度相机
 - 内置室内 example 测试场景与空世界；支持自定义 mesh 场景导入
 - RViz2 预配置（点云、图像、TF）
@@ -15,8 +15,7 @@
 | 包 | 说明 |
 |---|---|
 | `quadrover_description` | 模块化 xacro：底盘、传感器、Gazebo 插件 |
-| `quadrover_gazebo` | 世界文件、launch、RViz、bridge 配置、map TF 广播 |
-| `quadrover_localization` | 里程计融合，发布 `/odom` 与 `odom→base_link` TF |
+| `quadrover_gazebo` | 世界文件、launch、RViz、ROS-GZ 桥接 |
 | `quadrover_bringup` | 高层 launch：`sim_example` |
 
 ## 依赖
@@ -76,45 +75,18 @@ ros2 launch quadrover_gazebo spawn_quadrover_sensors.launch.py rviz:=true gui:=t
 | `rviz` | `false` | 是否启动 RViz2 |
 | `render_engine` | `ogre2` | 渲染后端（Fortress 默认） |
 | `use_diff_drive` | `true` | Gazebo DiffDrive 插件 |
-| `publish_map_tf` | `true` | 发布 map 帧 TF（有 `odom→base_link` 时发 `map→odom`，否则发 `map→base_link`） |
-| `use_localization` | `true` | 启动 quadrover_localization（wheel_only 透传） |
 | `spawn_x/y/z` | 因场景而异 | 机器人初始位姿 |
 
-### 里程计与 TF 架构
+### 位姿话题
 
-各里程计源发布在 `/odom/*` 下，由 `quadrover_localization` 融合后输出 `/odom`：
+本仓库**不维护** `map→odom` 或 `odom→base_link` TF，仅发布位姿话题供外部 odom/loc 融合节点使用：
 
-| 话题 / TF | 类型 | 说明 |
-|---|---|---|
-| `/odom/wheel` | `nav_msgs/Odometry` | Gazebo DiffDrive 轮式里程计（有漂移） |
-| `/odom/ground_truth` | `nav_msgs/Odometry` | 仿真真值（`map` → `base_link`） |
-| `/odom` | `nav_msgs/Odometry` | 融合后里程计（`odom` → `base_link`） |
-| `/tf` | TF | `map→odom→base_link`（完整模式）或 `map→base_link`（无 localization） |
+| 话题 | 类型 | 坐标系 | 说明 |
+|---|---|---|---|
+| `/odom/wheel` | `nav_msgs/Odometry` | `odom` → `base_link` | Gazebo DiffDrive 轮式里程计（有漂移） |
+| `/loc/gazebo` | `nav_msgs/Odometry` | `map` → `base_link` | 仿真真值位姿 |
 
-**完整 TF 树（`publish_map_tf:=true` + `use_localization:=true`）：**
-
-```
-map ──(map_tf_broadcaster)──► odom ──(odom_relay)──► base_link ──(URDF)──► 传感器
-```
-
-查看 TF 树：
-
-```bash
-ros2 topic echo /odom/ground_truth --field pose.pose
-ros2 run tf2_tools view_frames
-```
-
-关闭 localization 时（map 直接连 base_link）：
-
-```bash
-ros2 launch quadrover_bringup sim_example.launch.py use_localization:=false rviz:=true gui:=true
-```
-
-关闭 map TF：
-
-```bash
-ros2 launch quadrover_bringup sim_example.launch.py publish_map_tf:=false rviz:=true gui:=true
-```
+`robot_state_publisher` 仍发布 URDF 定义的 `base_link` → 传感器 TF。
 
 ### 手动控制
 
@@ -127,10 +99,8 @@ ros2 run teleop_twist_keyboard teleop_twist_keyboard
 | 话题 | 类型 | 说明 |
 |---|---|---|
 | `/cmd_vel` | `geometry_msgs/Twist` | 速度指令（→ Gazebo） |
-| `/odom/wheel` | `nav_msgs/Odometry` | 轮式里程计（Gazebo 原始） |
-| `/odom/ground_truth` | `nav_msgs/Odometry` | 仿真真值（`map` → `base_link`） |
-| `/odom` | `nav_msgs/Odometry` | 融合后里程计（`odom` → `base_link`） |
-| `/tf` | `tf2_msgs/TFMessage` | map / odom / base_link 变换 |
+| `/odom/wheel` | `nav_msgs/Odometry` | 轮式里程计（`odom` → `base_link`） |
+| `/loc/gazebo` | `nav_msgs/Odometry` | 仿真真值（`map` → `base_link`） |
 | `/joint_states` | `sensor_msgs/JointState` | 关节状态 |
 | `/imu/data` | `sensor_msgs/Imu` | IMU |
 | `/lidar/points` | `sensor_msgs/PointCloud2` | 3D 点云 |
@@ -142,16 +112,16 @@ ros2 run teleop_twist_keyboard teleop_twist_keyboard
 ```bash
 ros2 topic hz /imu/data
 ros2 topic hz /lidar/points
-ros2 topic hz /odom
 ros2 topic hz /odom/wheel
-ros2 topic hz /odom/ground_truth
-ros2 run tf2_tools view_frames
+ros2 topic hz /loc/gazebo
+ros2 topic echo /loc/gazebo --field pose.pose
 ```
 
 ## 说明
 
 - 默认渲染引擎为 **ogre2**，面向原生 Linux + 独显，建议在 Ubuntu 实机运行以获得最佳 GUI 体验。
-- 详细包文档见 [docs/README.md](docs/README.md)。
+- 本仓库仅提供仿真传感器与位姿源，不包含 odom/loc 融合及 map/odom TF 维护。
+- 详细包文档见 [docs/README.md](docs/README.md)；运行时节点与话题见 [docs/runtime.md](docs/runtime.md)。
 
 ## 参考
 

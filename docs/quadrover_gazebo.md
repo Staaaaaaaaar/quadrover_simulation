@@ -8,7 +8,7 @@
 | 构建类型 | ament_cmake + ament_cmake_python |
 | 描述 | Gazebo Fortress 仿真 launch、世界文件与 ROS-GZ 桥接 |
 
-本包是仿真的核心运行时包，负责启动 Gazebo、生成机器人、桥接 Gazebo 与 ROS 2 话题，并提供预配置的 RViz 与世界场景。
+本包是仿真的核心运行时包，负责启动 Gazebo、生成机器人、桥接 Gazebo 与 ROS 2 话题，并提供预配置的 RViz 与世界场景。本包**不维护** map/odom TF，仅桥接位姿话题 `/odom/wheel` 与 `/loc/gazebo`。
 
 ## 文件结构
 
@@ -24,13 +24,12 @@ quadrover_gazebo/
 │   ├── README.md                   # 自定义 mesh 导入说明
 │   └── .gitkeep                    # 保留目录；实际资源本地放置（gitignore）
 ├── rviz/
-│   └── quadrover.rviz                    # RViz2 预配置
+│   └── quadrover.rviz              # RViz2 预配置
 ├── scripts/
-│   ├── map_tf_broadcaster.py          # 自适应 map TF 广播
 │   └── static_joint_state_publisher.py  # 空 joint_states 发布器
 └── worlds/
-    ├── empty.sdf                     # 空世界
-    └── example.sdf                   # 室内主要测试用例（10 m 封闭房间）
+    ├── empty.sdf                   # 空世界
+    └── example.sdf                 # 室内主要测试用例（10 m 封闭房间）
 ```
 
 ## 依赖
@@ -61,7 +60,6 @@ quadrover_gazebo/
 | `rviz` | `false` | 启动 RViz2 |
 | `gui` | `false` | Gazebo GUI |
 | `render_engine` | `ogre2` | 渲染引擎 |
-| `publish_map_tf` | `true` | 从真值发布 map TF（有 odom→base_link 时发 map→odom，否则 map→base_link） |
 
 **启动示例：**
 
@@ -80,35 +78,10 @@ ros2 launch quadrover_gazebo spawn_quadrover_sensors.launch.py \
 | 2 | robot_state_publisher | `robot_state_publisher/robot_state_publisher` |
 | 3 | 机器人生成 | `ros_gz_sim/create` |
 | 4 | ROS-GZ 桥接 | `ros_gz_bridge/parameter_bridge` |
-| 5 | *(可选)* map_tf_broadcaster | `quadrover_gazebo/map_tf_broadcaster.py` |
-| 6 | *(可选)* static_joint_state_publisher | `quadrover_gazebo/static_joint_state_publisher.py` |
-| 7 | *(可选)* RViz2 | `rviz2/rviz2` |
+| 5 | *(可选)* static_joint_state_publisher | `quadrover_gazebo/static_joint_state_publisher.py` |
+| 6 | *(可选)* RViz2 | `rviz2/rviz2` |
 
 ## 自定义节点
-
-### map_tf_broadcaster.py
-
-从 `/odom/ground_truth` 发布 map 帧 TF，运行时检测 `odom→base_link` 是否存在：
-
-- **存在**：计算并发布 `map→odom`（`T_map_odom = T_map_base × inv(T_odom_base)`）
-- **不存在**：直接发布 `map→base_link`
-
-| 属性 | 值 |
-|------|-----|
-| 节点名 | `map_tf_broadcaster` |
-| 语言 | Python 3 |
-
-**订阅：**
-
-| 话题 | 类型 | 说明 |
-|------|------|------|
-| `/odom/ground_truth` | `nav_msgs/Odometry` | 仿真真值（map→base_link） |
-
-**发布：**
-
-| TF | 说明 |
-|----|------|
-| `map→odom` 或 `map→base_link` | 取决于 odom→base_link 是否可用 |
 
 ### static_joint_state_publisher.py
 
@@ -144,7 +117,7 @@ ros2 launch quadrover_gazebo spawn_quadrover_sensors.launch.py \
 | 方向 | 话题 | 类型 |
 |------|------|------|
 | 订阅 | `/joint_states` | `sensor_msgs/JointState` |
-| 发布 | `/tf`, `/tf_static` | TF transforms |
+| 发布 | `/tf`, `/tf_static` | URDF 定义的 `base_link` → 传感器 TF |
 
 ### ros_gz_sim/create
 
@@ -160,7 +133,7 @@ ros2 launch quadrover_gazebo spawn_quadrover_sensors.launch.py \
 
 ### ros_gz_bridge/parameter_bridge
 
-#### 始终桥接（传感器 + 时钟）
+#### 始终桥接（传感器 + 时钟 + 真值）
 
 | ROS 话题 | 方向 | GZ 类型 ↔ ROS 类型 |
 |----------|------|---------------------|
@@ -171,7 +144,7 @@ ros2 launch quadrover_gazebo spawn_quadrover_sensors.launch.py \
 | `/camera/color/camera_info` | GZ→ROS | `gz.msgs.CameraInfo` ↔ `sensor_msgs/CameraInfo` |
 | `/camera/depth/image_raw` | GZ→ROS | `gz.msgs.Image` ↔ `sensor_msgs/Image` |
 | `/camera/depth/camera_info` | GZ→ROS | `gz.msgs.CameraInfo` ↔ `sensor_msgs/CameraInfo` |
-| `/odom/ground_truth` | GZ→ROS | `gz.msgs.Odometry` ↔ `nav_msgs/Odometry` |
+| `/loc/gazebo` | GZ→ROS | `gz.msgs.Odometry` ↔ `nav_msgs/Odometry` |
 
 > LiDAR 点云经 remapping：`/lidar/scan/points` → `/lidar/points`
 
@@ -183,7 +156,7 @@ ros2 launch quadrover_gazebo spawn_quadrover_sensors.launch.py \
 | `/odom/wheel` | GZ→ROS | `nav_msgs/Odometry` |
 | `/joint_states` | GZ→ROS | `sensor_msgs/JointState` |
 
-> DiffDrive 内部 TF 发布到 `/odom/wheel/tf_internal`，不桥接到 ROS；`odom→base_link` 由 `quadrover_localization` 发布。
+> Gazebo 插件内部 TF 发布到 `*/tf_internal`，不桥接到 ROS；map/odom TF 由外部 loc/odom 融合节点维护。
 
 ### rviz2（可选）
 
@@ -194,7 +167,7 @@ ros2 launch quadrover_gazebo spawn_quadrover_sensors.launch.py \
 | PointCloud2 | `/lidar/points` |
 | RGB Camera | `/camera/color/image_raw` |
 | Depth Camera | `/camera/depth/image_raw` |
-| Odometry（默认禁用） | `/odom` |
+| Odometry（默认禁用） | `/odom/wheel` |
 | TF | 全部 frames |
 | Fixed Frame | `base_link` |
 
@@ -263,17 +236,15 @@ ros2 launch quadrover_gazebo spawn_quadrover_sensors.launch.py \
                              ▼
   /cmd_vel, /odom/wheel, /joint_states ────────► ROS 侧
 
-  Gazebo OdometryPublisher ──bridge──► /odom/ground_truth
+  Gazebo OdometryPublisher ──bridge──► /loc/gazebo
   Gazebo Sensors ──bridge──► /imu/data, /lidar/points,
                              /camera/color/*, /camera/depth/*, /clock
 
-  /odom/wheel ──► quadrover_localization ──► /odom, odom→base_link TF
-  /odom/ground_truth ──► map_tf_broadcaster ──► map→odom 或 map→base_link TF
-  /joint_states ──► robot_state_publisher ──► /tf, /tf_static
+  /joint_states ──► robot_state_publisher ──► base_link→传感器 TF
 ```
 
 ## CMake 目标
 
 - 安装 `config/`, `launch/`, `worlds/`, `rviz/`, `meshes/` 目录
-- 安装 `scripts/static_joint_state_publisher.py`、`scripts/map_tf_broadcaster.py` 至 `lib/quadrover_gazebo`
+- 安装 `scripts/static_joint_state_publisher.py` 至 `lib/quadrover_gazebo`
 - 无 C++ 编译目标
