@@ -1,4 +1,4 @@
-# robot_gazebo
+# quadrover_gazebo
 
 ## 概述
 
@@ -13,18 +13,18 @@
 ## 文件结构
 
 ```
-robot_gazebo/
+quadrover_gazebo/
 ├── CMakeLists.txt
 ├── package.xml
 ├── config/
 │   └── ros_gz_bridge.yaml           # 声明式桥接配置（当前未被 launch 引用）
 ├── launch/
-│   └── spawn_robot_sensors.launch.py # 核心仿真 launch
+│   └── spawn_quadrover_sensors.launch.py # 核心仿真 launch
 ├── meshes/
 │   ├── README.md                   # 自定义 mesh 导入说明
 │   └── .gitkeep                    # 保留目录；实际资源本地放置（gitignore）
 ├── rviz/
-│   └── robot.rviz                    # RViz2 预配置
+│   └── quadrover.rviz                    # RViz2 预配置
 ├── scripts/
 │   ├── map_tf_broadcaster.py          # 自适应 map TF 广播
 │   └── static_joint_state_publisher.py  # 空 joint_states 发布器
@@ -37,13 +37,13 @@ robot_gazebo/
 
 ### 运行时依赖（exec_depend）
 
-- `robot_description`
+- `quadrover_description`
 - `ros_gz_sim`, `ros_gz_bridge`, `ros_gz_image`
 - `robot_state_publisher`, `rclpy`, `xacro`, `rviz2`
 
 ## Launch 文件
 
-### spawn_robot_sensors.launch.py
+### spawn_quadrover_sensors.launch.py
 
 核心仿真 launch，启动完整 Gazebo + 机器人 + 传感器桥接栈。
 
@@ -66,9 +66,9 @@ robot_gazebo/
 **启动示例：**
 
 ```bash
-ros2 launch robot_gazebo spawn_robot_sensors.launch.py rviz:=true gui:=true
-ros2 launch robot_gazebo spawn_robot_sensors.launch.py \
-  world:=$(ros2 pkg prefix robot_gazebo)/share/robot_gazebo/worlds/example.sdf \
+ros2 launch quadrover_gazebo spawn_quadrover_sensors.launch.py rviz:=true gui:=true
+ros2 launch quadrover_gazebo spawn_quadrover_sensors.launch.py \
+  world:=$(ros2 pkg prefix quadrover_gazebo)/share/quadrover_gazebo/worlds/example.sdf \
   use_diff_drive:=true wheel_joint_type:=continuous
 ```
 
@@ -80,8 +80,8 @@ ros2 launch robot_gazebo spawn_robot_sensors.launch.py \
 | 2 | robot_state_publisher | `robot_state_publisher/robot_state_publisher` |
 | 3 | 机器人生成 | `ros_gz_sim/create` |
 | 4 | ROS-GZ 桥接 | `ros_gz_bridge/parameter_bridge` |
-| 5 | *(可选)* map_tf_broadcaster | `robot_gazebo/map_tf_broadcaster.py` |
-| 6 | *(可选)* static_joint_state_publisher | `robot_gazebo/static_joint_state_publisher.py` |
+| 5 | *(可选)* map_tf_broadcaster | `quadrover_gazebo/map_tf_broadcaster.py` |
+| 6 | *(可选)* static_joint_state_publisher | `quadrover_gazebo/static_joint_state_publisher.py` |
 | 7 | *(可选)* RViz2 | `rviz2/rviz2` |
 
 ## 自定义节点
@@ -139,7 +139,7 @@ ros2 launch robot_gazebo spawn_robot_sensors.launch.py \
 | 参数 | 说明 |
 |------|------|
 | `use_sim_time` | 仿真时钟 |
-| `robot_description` | xacro 生成的 URDF 字符串 |
+| `quadrover_description` | xacro 生成的 URDF 字符串 |
 
 | 方向 | 话题 | 类型 |
 |------|------|------|
@@ -148,12 +148,12 @@ ros2 launch robot_gazebo spawn_robot_sensors.launch.py \
 
 ### ros_gz_sim/create
 
-在指定 world 中生成名为 `robot` 的机器人模型。
+在指定 world 中生成名为 `quadrover` 的 Quadrover 模型。
 
 | CLI 参数 | 说明 |
 |----------|------|
 | `-world` | Gazebo world 名称 |
-| `-name robot` | 模型名称 |
+| `-name quadrover` | 模型名称 |
 | `-allow_renaming true` | 允许重命名 |
 | `-param robot_description` | URDF 参数 |
 | `-x/-y/-z` | 生成位置 |
@@ -183,11 +183,11 @@ ros2 launch robot_gazebo spawn_robot_sensors.launch.py \
 | `/odom/wheel` | GZ→ROS | `nav_msgs/Odometry` |
 | `/joint_states` | GZ→ROS | `sensor_msgs/JointState` |
 
-> DiffDrive 内部 TF 发布到 `/odom/wheel/tf_internal`，不桥接到 ROS；`odom→base_link` 由 `four_wheel_localization` 发布。
+> DiffDrive 内部 TF 发布到 `/odom/wheel/tf_internal`，不桥接到 ROS；`odom→base_link` 由 `quadrover_localization` 发布。
 
 ### rviz2（可选）
 
-加载 `rviz/robot.rviz`，订阅以下可视化话题：
+加载 `rviz/quadrover.rviz`，订阅以下可视化话题：
 
 | Display | 话题 |
 |---------|------|
@@ -220,7 +220,7 @@ ros2 launch robot_gazebo spawn_robot_sensors.launch.py \
 
 ## 自定义 mesh 场景
 
-大型 mesh 资源（OBJ / MTL / 贴图）放在 `meshes/` 下，**默认不提交 Git**。`spawn_robot_sensors.launch.py` 启动时会将本包 share 路径写入 `GZ_SIM_RESOURCE_PATH`，world SDF 中可用：
+大型 mesh 资源（OBJ / MTL / 贴图）放在 `meshes/` 下，**默认不提交 Git**。`spawn_quadrover_sensors.launch.py` 启动时会将本包 share 路径写入 `GZ_SIM_RESOURCE_PATH`，world SDF 中可用：
 
 ```xml
 <uri>file://meshes/YourScene/YourScene.obj</uri>
@@ -228,21 +228,21 @@ ros2 launch robot_gazebo spawn_robot_sensors.launch.py \
 
 **推荐流程：**
 
-1. 将 mesh 放入 `src/robot_gazebo/meshes/YourScene/`。
+1. 将 mesh 放入 `src/quadrover_gazebo/meshes/YourScene/`。
 2. 在 `worlds/` 新建 SDF，添加 static model 引用上述 URI（visual + collision）。
 3. 用 launch 参数指定 world 与生成位姿：
 
 ```bash
-ros2 launch robot_gazebo spawn_robot_sensors.launch.py \
-  world:=$(ros2 pkg prefix robot_gazebo)/share/robot_gazebo/worlds/your_world.sdf \
+ros2 launch quadrover_gazebo spawn_quadrover_sensors.launch.py \
+  world:=$(ros2 pkg prefix quadrover_gazebo)/share/quadrover_gazebo/worlds/your_world.sdf \
   spawn_x:=0.0 spawn_y:=0.0 spawn_z:=0.23 \
   use_diff_drive:=true wheel_joint_type:=continuous \
   gui:=true rviz:=true
 ```
 
-4. （可选）复制 `robot_bringup/launch/sim_example.launch.py` 为本地 launch，修改默认 `world` 与 `spawn_*`。
+4. （可选）复制 `quadrover_bringup/launch/sim_example.launch.py` 为本地 launch，修改默认 `world` 与 `spawn_*`。
 
-更多细节见 [meshes/README.md](../src/robot_gazebo/meshes/README.md)。
+更多细节见 [meshes/README.md](../src/quadrover_gazebo/meshes/README.md)。
 
 **注意：** LiDAR 对 mesh 法线方向敏感；Gazebo 不读取 OBJ 顶点行颜色，外观请用 MTL/贴图。
 
@@ -267,7 +267,7 @@ ros2 launch robot_gazebo spawn_robot_sensors.launch.py \
   Gazebo Sensors ──bridge──► /imu/data, /lidar/points,
                              /camera/color/*, /camera/depth/*, /clock
 
-  /odom/wheel ──► four_wheel_localization ──► /odom, odom→base_link TF
+  /odom/wheel ──► quadrover_localization ──► /odom, odom→base_link TF
   /odom/ground_truth ──► map_tf_broadcaster ──► map→odom 或 map→base_link TF
   /joint_states ──► robot_state_publisher ──► /tf, /tf_static
 ```
@@ -275,5 +275,5 @@ ros2 launch robot_gazebo spawn_robot_sensors.launch.py \
 ## CMake 目标
 
 - 安装 `config/`, `launch/`, `worlds/`, `rviz/`, `meshes/` 目录
-- 安装 `scripts/static_joint_state_publisher.py`、`scripts/map_tf_broadcaster.py` 至 `lib/robot_gazebo`
+- 安装 `scripts/static_joint_state_publisher.py`、`scripts/map_tf_broadcaster.py` 至 `lib/quadrover_gazebo`
 - 无 C++ 编译目标

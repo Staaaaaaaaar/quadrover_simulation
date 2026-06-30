@@ -1,4 +1,4 @@
-# robot_bringup
+# quadrover_bringup
 
 ## 概述
 
@@ -6,14 +6,14 @@
 |------|-----|
 | 版本 | 0.1.0 |
 | 构建类型 | ament_cmake |
-| 描述 | 机器人仿真的顶层 launch 入口 |
+| 描述 | Quadrover 仿真的顶层 launch 入口 |
 
-本包不包含自定义节点，提供面向用户的场景级 launch 文件，将参数转发至 `robot_gazebo` 与 `four_wheel_localization`。
+本包不包含自定义节点，提供面向用户的场景级 launch 文件，将参数转发至 `quadrover_gazebo` 与 `quadrover_localization`。
 
 ## 文件结构
 
 ```
-robot_bringup/
+quadrover_bringup/
 ├── CMakeLists.txt
 ├── package.xml
 └── launch/
@@ -24,9 +24,9 @@ robot_bringup/
 
 ### 运行时依赖（exec_depend）
 
-- `robot_gazebo`
-- `robot_description`
-- `four_wheel_localization`
+- `quadrover_gazebo`
+- `quadrover_description`
+- `quadrover_localization`
 
 ## Launch 文件
 
@@ -42,35 +42,35 @@ robot_bringup/
 | `rviz` | `false` | 启动 RViz2 |
 | `gui` | `false` | 启动 Gazebo GUI |
 | `render_engine` | `ogre2` | Gazebo 渲染后端 |
-| `world` | `robot_gazebo/worlds/example.sdf` | 世界文件 |
+| `world` | `quadrover_gazebo/worlds/example.sdf` | 世界文件 |
 | `spawn_x/y/z` | `0.0 / 0.0 / 0.23` | 机器人生成位置 |
 | `wheel_joint_type` | `continuous` | 轮子关节类型 |
 | `use_diff_drive` | `true` | 启用 Gazebo DiffDrive 插件 |
 | `publish_map_tf` | `true` | 发布 map 帧 TF |
-| `use_localization` | `true` | 启动 four_wheel_localization |
+| `use_localization` | `true` | 启动 quadrover_localization |
 
 **启动示例：**
 
 ```bash
-ros2 launch robot_bringup sim_example.launch.py rviz:=true gui:=true
-ros2 launch robot_bringup sim_example.launch.py use_localization:=false
+ros2 launch quadrover_bringup sim_example.launch.py rviz:=true gui:=true
+ros2 launch quadrover_bringup sim_example.launch.py use_localization:=false
 ```
 
 ## 自定义 mesh 场景
 
 仓库内仅提交 `sim_example` 作为标准测试入口。若需加载本地 mesh 世界：
 
-- 直接使用 `spawn_robot_sensors.launch.py` 并传入 `world` / `spawn_*` 参数；或
+- 直接使用 `spawn_quadrover_sensors.launch.py` 并传入 `world` / `spawn_*` 参数；或
 - 复制 `sim_example.launch.py` 为本地 launch（勿提交大型 mesh 与专用 world），修改默认 world 与生成位姿。
 
-详见 [robot_gazebo.md — 自定义 mesh 场景](robot_gazebo.md#自定义-mesh-场景)。
+详见 [quadrover_gazebo.md — 自定义 mesh 场景](quadrover_gazebo.md#自定义-mesh-场景)。
 
 ## 启动的组件
 
 `sim_example` 通过 `IncludeLaunchDescription` 调用：
 
-1. `robot_gazebo/spawn_robot_sensors.launch.py`（Gazebo + 传感器 + map TF）
-2. `four_wheel_localization/localization.launch.py`（可选，默认启用）
+1. `quadrover_gazebo/spawn_quadrover_sensors.launch.py`（Gazebo + 传感器 + map TF）
+2. `quadrover_localization/localization.launch.py`（可选，默认启用）
 
 实际启动的进程包括：
 
@@ -88,7 +88,7 @@ ros2 launch robot_bringup sim_example.launch.py use_localization:=false
 
 ## 话题 / 服务
 
-本包不直接发布或订阅任何话题，所有 ROS 接口由被包含的 launch 提供。参见 [four_wheel_localization.md](four_wheel_localization.md)、[robot_gazebo.md](robot_gazebo.md) 和 [README.md](README.md)。
+本包不直接发布或订阅任何话题，所有 ROS 接口由被包含的 launch 提供。参见 [quadrover_localization.md](quadrover_localization.md)、[quadrover_gazebo.md](quadrover_gazebo.md) 和 [README.md](README.md)。
 
 ## CMake 目标
 

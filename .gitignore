@@ -36,11 +36,11 @@ devel/
 
 # Local-only assets (mesh binaries, private launch/worlds)
 docs/code-review.md
-src/robot_gazebo/meshes/**/*
-!src/robot_gazebo/meshes/.gitkeep
-!src/robot_gazebo/meshes/README.md
-src/robot_gazebo/worlds/*.sdf
-!src/robot_gazebo/worlds/empty.sdf
-!src/robot_gazebo/worlds/example.sdf
-src/robot_bringup/launch/sim_*.launch.py
-!src/robot_bringup/launch/sim_example.launch.py
+src/quadrover_gazebo/meshes/**/*
+!src/quadrover_gazebo/meshes/.gitkeep
+!src/quadrover_gazebo/meshes/README.md
+src/quadrover_gazebo/worlds/*.sdf
+!src/quadrover_gazebo/worlds/empty.sdf
+!src/quadrover_gazebo/worlds/example.sdf
+src/quadrover_bringup/launch/sim_*.launch.py
+!src/quadrover_bringup/launch/sim_example.launch.py

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Publish empty joint states for robots with only fixed joints."""
+"""Publish empty joint states for Quadrover with only fixed joints."""
 
 import rclpy
 from rclpy.node import Node

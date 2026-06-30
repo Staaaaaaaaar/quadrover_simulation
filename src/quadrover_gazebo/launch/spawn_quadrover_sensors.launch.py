@@ -66,12 +66,12 @@ def _launch_setup(context, *args, **kwargs):
     )
     publish_map_tf = LaunchConfiguration('publish_map_tf').perform(context) == 'true'
 
-    robot_description = Command([
+    quadrover_description = Command([
         'xacro ',
         PathJoinSubstitution([
-            FindPackageShare('robot_description'),
+            FindPackageShare('quadrover_description'),
             'urdf',
-            'robot.urdf.xacro',
+            'quadrover.urdf.xacro',
         ]),
         f' wheel_joint_type:={wheel_joint_type}',
         f' use_diff_drive:={use_diff_drive}',
@@ -97,7 +97,7 @@ def _launch_setup(context, *args, **kwargs):
             output='screen',
             parameters=[{
                 'use_sim_time': use_sim_time,
-                'robot_description': robot_description,
+                'robot_description': quadrover_description,
             }],
         ),
         Node(
@@ -105,7 +105,7 @@ def _launch_setup(context, *args, **kwargs):
             executable='create',
             arguments=[
                 '-world', world_name,
-                '-name', 'robot',
+                '-name', 'quadrover',
                 '-allow_renaming', 'true',
                 '-param', 'robot_description',
                 '-x', spawn_x,
@@ -115,7 +115,7 @@ def _launch_setup(context, *args, **kwargs):
             output='screen',
             parameters=[{
                 'use_sim_time': use_sim_time,
-                'robot_description': robot_description,
+                'robot_description': quadrover_description,
             }],
         ),
         Node(
@@ -133,7 +133,7 @@ def _launch_setup(context, *args, **kwargs):
     if publish_map_tf:
         nodes.append(
             Node(
-                package='robot_gazebo',
+                package='quadrover_gazebo',
                 executable='map_tf_broadcaster.py',
                 name='map_tf_broadcaster',
                 output='screen',
@@ -144,7 +144,7 @@ def _launch_setup(context, *args, **kwargs):
     if use_joint_state_publisher:
         nodes.append(
             Node(
-                package='robot_gazebo',
+                package='quadrover_gazebo',
                 executable='static_joint_state_publisher.py',
                 name='static_joint_state_publisher',
                 parameters=[{
@@ -156,12 +156,12 @@ def _launch_setup(context, *args, **kwargs):
         )
 
     if rviz_enabled:
-        pkg_robot_gazebo = get_package_share_directory('robot_gazebo')
+        pkg_quadrover_gazebo = get_package_share_directory('quadrover_gazebo')
         nodes.append(
             Node(
                 package='rviz2',
                 executable='rviz2',
-                arguments=['-d', os.path.join(pkg_robot_gazebo, 'rviz', 'robot.rviz')],
+                arguments=['-d', os.path.join(pkg_quadrover_gazebo, 'rviz', 'quadrover.rviz')],
                 parameters=[{'use_sim_time': use_sim_time}],
             )
         )
@@ -170,9 +170,9 @@ def _launch_setup(context, *args, **kwargs):
 
 
 def generate_launch_description():
-    pkg_robot_gazebo = get_package_share_directory('robot_gazebo')
+    pkg_quadrover_gazebo = get_package_share_directory('quadrover_gazebo')
     gz_resource_path = (
-        pkg_robot_gazebo + ':' + os.environ.get('GZ_SIM_RESOURCE_PATH', '')
+        pkg_quadrover_gazebo + ':' + os.environ.get('GZ_SIM_RESOURCE_PATH', '')
     )
 
     return LaunchDescription([
@@ -183,7 +183,7 @@ def generate_launch_description():
         DeclareLaunchArgument('use_sim_time', default_value='true'),
         DeclareLaunchArgument(
             'world',
-            default_value=os.path.join(pkg_robot_gazebo, 'worlds', 'empty.sdf'),
+            default_value=os.path.join(pkg_quadrover_gazebo, 'worlds', 'empty.sdf'),
         ),
         DeclareLaunchArgument(
             'world_name',

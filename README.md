@@ -1,10 +1,10 @@
-# Robot Simulation
+# Quadrover
 
 基于 **ROS 2 Humble** 与 **Gazebo Fortress** 的四轮移动机器人仿真环境，集成 LiDAR、IMU、RGB-D 相机与 Gazebo DiffDrive 差速驱动，适用于原生 Linux 下的传感器联调与导航算法开发。
 
 ## 功能概览
 
-- 四轮差速底盘，支持 `/cmd_vel` 控制与 `/odom` 反馈（经 `four_wheel_localization` 融合发布）
+- 四轮差速底盘，支持 `/cmd_vel` 控制与 `/odom` 反馈（经 `quadrover_localization` 融合发布）
 - 里程计源统一在 `/odom/*` 命名空间（轮式、真值；后续可扩展 RTK、SLAM、IMU 等）
 - 3D LiDAR（`/lidar/points`）、IMU（`/imu/data`）、RGB/深度相机
 - 内置室内 example 测试场景与空世界；支持自定义 mesh 场景导入
@@ -14,10 +14,10 @@
 
 | 包 | 说明 |
 |---|---|
-| `robot_description` | 模块化 xacro：底盘、传感器、Gazebo 插件 |
-| `robot_gazebo` | 世界文件、launch、RViz、bridge 配置、map TF 广播 |
-| `four_wheel_localization` | 里程计融合，发布 `/odom` 与 `odom→base_link` TF |
-| `robot_bringup` | 高层 launch：`sim_example` |
+| `quadrover_description` | 模块化 xacro：底盘、传感器、Gazebo 插件 |
+| `quadrover_gazebo` | 世界文件、launch、RViz、bridge 配置、map TF 广播 |
+| `quadrover_localization` | 里程计融合，发布 `/odom` 与 `odom→base_link` TF |
+| `quadrover_bringup` | 高层 launch：`sim_example` |
 
 ## 依赖
 
@@ -38,7 +38,7 @@ Gazebo Fortress 随 `ros-humble-ros-gz` 提供（`ign gazebo` / `gz sim`）。
 ## 编译
 
 ```bash
-cd ~/ws/robot_simulation
+cd ~/ws/quadrover_simulation
 ./scripts/build.sh
 ```
 
@@ -55,18 +55,18 @@ source install/setup.bash
 10 m × 10 m 四面围墙 + 简单障碍物（默认无 GUI，以下示例开启 Gazebo GUI 与 RViz2）：
 
 ```bash
-ros2 launch robot_bringup sim_example.launch.py rviz:=true gui:=true
+ros2 launch quadrover_bringup sim_example.launch.py rviz:=true gui:=true
 ```
 
 ### 传感器联调（空世界）
 
 ```bash
-ros2 launch robot_gazebo spawn_robot_sensors.launch.py rviz:=true gui:=true
+ros2 launch quadrover_gazebo spawn_quadrover_sensors.launch.py rviz:=true gui:=true
 ```
 
 ### 自定义 mesh 场景
 
-将 OBJ/MTL/贴图放入 `src/robot_gazebo/meshes/`，编写 world SDF 后通过 `world` 与 `spawn_*` 参数启动。详见 [meshes/README.md](src/robot_gazebo/meshes/README.md) 与 [docs/robot_gazebo.md](docs/robot_gazebo.md)。
+将 OBJ/MTL/贴图放入 `src/quadrover_gazebo/meshes/`，编写 world SDF 后通过 `world` 与 `spawn_*` 参数启动。详见 [meshes/README.md](src/quadrover_gazebo/meshes/README.md) 与 [docs/quadrover_gazebo.md](docs/quadrover_gazebo.md)。
 
 ### 常用 launch 参数
 
@@ -77,12 +77,12 @@ ros2 launch robot_gazebo spawn_robot_sensors.launch.py rviz:=true gui:=true
 | `render_engine` | `ogre2` | 渲染后端（Fortress 默认） |
 | `use_diff_drive` | `true` | Gazebo DiffDrive 插件 |
 | `publish_map_tf` | `true` | 发布 map 帧 TF（有 `odom→base_link` 时发 `map→odom`，否则发 `map→base_link`） |
-| `use_localization` | `true` | 启动 four_wheel_localization（wheel_only 透传） |
+| `use_localization` | `true` | 启动 quadrover_localization（wheel_only 透传） |
 | `spawn_x/y/z` | 因场景而异 | 机器人初始位姿 |
 
 ### 里程计与 TF 架构
 
-各里程计源发布在 `/odom/*` 下，由 `four_wheel_localization` 融合后输出 `/odom`：
+各里程计源发布在 `/odom/*` 下，由 `quadrover_localization` 融合后输出 `/odom`：
 
 | 话题 / TF | 类型 | 说明 |
 |---|---|---|
@@ -107,13 +107,13 @@ ros2 run tf2_tools view_frames
 关闭 localization 时（map 直接连 base_link）：
 
 ```bash
-ros2 launch robot_bringup sim_example.launch.py use_localization:=false rviz:=true gui:=true
+ros2 launch quadrover_bringup sim_example.launch.py use_localization:=false rviz:=true gui:=true
 ```
 
 关闭 map TF：
 
 ```bash
-ros2 launch robot_bringup sim_example.launch.py publish_map_tf:=false rviz:=true gui:=true
+ros2 launch quadrover_bringup sim_example.launch.py publish_map_tf:=false rviz:=true gui:=true
 ```
 
 ### 手动控制

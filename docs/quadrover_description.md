@@ -1,4 +1,4 @@
-# robot_description
+# quadrover_description
 
 ## 概述
 
@@ -8,16 +8,16 @@
 | 构建类型 | ament_cmake |
 | 描述 | 四轮洞穴探索机器人的 URDF/xacro 描述 |
 
-本包定义机器人 `robot` 的运动学树、物理属性、Gazebo 传感器与驱动插件。采用模块化 xacro 设计，通过参数切换驱动模式。
+本包定义 Quadrover 的运动学树、物理属性、Gazebo 传感器与驱动插件。采用模块化 xacro 设计，通过参数切换驱动模式。
 
 ## 文件结构
 
 ```
-robot_description/
+quadrover_description/
 ├── CMakeLists.txt
 ├── package.xml
 └── urdf/
-    ├── robot.urdf.xacro       # 主入口
+    ├── quadrover.urdf.xacro       # 主入口
     ├── chassis.xacro          # 底盘与四轮
     ├── imu.xacro              # IMU 传感器
     ├── lidar.xacro            # 3D GPU LiDAR
@@ -36,7 +36,7 @@ robot_description/
 
 ## xacro 参数
 
-主入口 `robot.urdf.xacro` 接受以下参数：
+主入口 `quadrover.urdf.xacro` 接受以下参数：
 
 | 参数 | 默认值 | 说明 |
 |------|--------|------|
@@ -46,7 +46,7 @@ robot_description/
 **xacro 调用示例：**
 
 ```bash
-xacro src/robot_description/urdf/robot.urdf.xacro \
+xacro src/quadrover_description/urdf/quadrover.urdf.xacro \
   wheel_joint_type:=continuous \
   use_diff_drive:=true
 ```
@@ -138,7 +138,7 @@ base_link
 
 - 发布 Gazebo 侧 `/joint_states`
 
-## ROS 话题（经 Gazebo 插件 / 传感器产生，由 robot_gazebo 桥接）
+## ROS 话题（经 Gazebo 插件 / 传感器产生，由 quadrover_gazebo 桥接）
 
 本包不直接运行节点，但 URDF 中定义的 Gazebo 插件和传感器产生以下话题：
 

@@ -1,4 +1,4 @@
-# four_wheel_localization
+# quadrover_localization
 
 ## 概述
 
@@ -6,14 +6,14 @@
 |------|-----|
 | 版本 | 0.1.0 |
 | 构建类型 | ament_cmake + ament_cmake_python |
-| 描述 | 四轮机器人里程计融合与定位 |
+| 描述 | Quadrover 里程计融合与定位 |
 
 本包整合 `/odom/*` 命名空间下的各里程计源，根据参数选择融合方法，最终发布 `/odom` 话题与 `odom→base_link` TF 变换。
 
 ## 文件结构
 
 ```
-four_wheel_localization/
+quadrover_localization/
 ├── CMakeLists.txt
 ├── package.xml
 ├── config/
@@ -53,8 +53,8 @@ four_wheel_localization/
 **启动示例：**
 
 ```bash
-ros2 launch four_wheel_localization localization.launch.py
-ros2 launch four_wheel_localization localization.launch.py fusion_mode:=wheel_only
+ros2 launch quadrover_localization localization.launch.py
+ros2 launch quadrover_localization localization.launch.py fusion_mode:=wheel_only
 ```
 
 ## 节点
@@ -91,7 +91,7 @@ ros2 launch four_wheel_localization localization.launch.py fusion_mode:=wheel_on
 ## TF 树（完整模式）
 
 ```
-map ──(robot_gazebo/map_tf_broadcaster)──► odom ──(odom_relay)──► base_link ──(URDF)──► 传感器
+map ──(quadrover_gazebo/map_tf_broadcaster)──► odom ──(odom_relay)──► base_link ──(URDF)──► 传感器
 ```
 
 ## 后续扩展

@@ -8,7 +8,7 @@ from launch_ros.actions import Node
 
 
 def generate_launch_description():
-    pkg = get_package_share_directory('four_wheel_localization')
+    pkg = get_package_share_directory('quadrover_localization')
     config = os.path.join(pkg, 'config', 'wheel_only.yaml')
 
     return LaunchDescription([
@@ -19,7 +19,7 @@ def generate_launch_description():
             description='Fusion method: wheel_only (future: ekf_wheel_imu, etc.)',
         ),
         Node(
-            package='four_wheel_localization',
+            package='quadrover_localization',
             executable='odom_relay.py',
             name='odom_relay',
             output='screen',

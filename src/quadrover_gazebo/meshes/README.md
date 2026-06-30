@@ -2,7 +2,7 @@
 
 本目录用于存放 **本地** 大型 mesh 资源（OBJ / MTL / 贴图等），默认 **不纳入 Git**。
 
-`spawn_robot_sensors.launch.py` 会自动将 `robot_gazebo` 包路径加入 `GZ_SIM_RESOURCE_PATH`，因此 world SDF 中可使用相对 URI：
+`spawn_quadrover_sensors.launch.py` 会自动将 `quadrover_gazebo` 包路径加入 `GZ_SIM_RESOURCE_PATH`，因此 world SDF 中可使用相对 URI：
 
 ```xml
 <uri>file://meshes/YourScene/YourScene.obj</uri>
@@ -15,14 +15,14 @@
 3. 启动仿真并指定 world 与生成位姿：
 
 ```bash
-ros2 launch robot_gazebo spawn_robot_sensors.launch.py \
-  world:=$(ros2 pkg prefix robot_gazebo)/share/robot_gazebo/worlds/your_world.sdf \
+ros2 launch quadrover_gazebo spawn_quadrover_sensors.launch.py \
+  world:=$(ros2 pkg prefix quadrover_gazebo)/share/quadrover_gazebo/worlds/your_world.sdf \
   spawn_x:=0.0 spawn_y:=0.0 spawn_z:=0.23 \
   use_diff_drive:=true wheel_joint_type:=continuous \
   gui:=true rviz:=true
 ```
 
-4. （可选）在 `robot_bringup/launch/` 下复制 `sim_example.launch.py` 为本地 launch，修改默认 `world` 与 `spawn_*` 参数。
+4. （可选）在 `quadrover_bringup/launch/` 下复制 `sim_example.launch.py` 为本地 launch，修改默认 `world` 与 `spawn_*` 参数。
 
 ## 注意事项
 

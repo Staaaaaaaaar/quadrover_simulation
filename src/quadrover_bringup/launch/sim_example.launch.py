@@ -9,8 +9,8 @@ from launch.substitutions import LaunchConfiguration
 
 
 def generate_launch_description():
-    pkg_robot_gazebo = get_package_share_directory('robot_gazebo')
-    pkg_four_wheel_localization = get_package_share_directory('four_wheel_localization')
+    pkg_quadrover_gazebo = get_package_share_directory('quadrover_gazebo')
+    pkg_quadrover_localization = get_package_share_directory('quadrover_localization')
 
     return LaunchDescription([
         DeclareLaunchArgument('use_sim_time', default_value='true'),
@@ -26,7 +26,7 @@ def generate_launch_description():
         ),
         DeclareLaunchArgument(
             'world',
-            default_value=os.path.join(pkg_robot_gazebo, 'worlds', 'example.sdf'),
+            default_value=os.path.join(pkg_quadrover_gazebo, 'worlds', 'example.sdf'),
         ),
         DeclareLaunchArgument('spawn_x', default_value='0.0'),
         DeclareLaunchArgument('spawn_y', default_value='0.0'),
@@ -45,11 +45,11 @@ def generate_launch_description():
         DeclareLaunchArgument(
             'use_localization',
             default_value='true',
-            description='Start four_wheel_localization (wheel odometry relay/fusion)',
+            description='Start quadrover_localization (wheel odometry relay/fusion)',
         ),
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
-                os.path.join(pkg_robot_gazebo, 'launch', 'spawn_robot_sensors.launch.py'),
+                os.path.join(pkg_quadrover_gazebo, 'launch', 'spawn_quadrover_sensors.launch.py'),
             ),
             launch_arguments={
                 'use_sim_time': LaunchConfiguration('use_sim_time'),
@@ -69,7 +69,7 @@ def generate_launch_description():
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
                 os.path.join(
-                    pkg_four_wheel_localization,
+                    pkg_quadrover_localization,
                     'launch',
                     'localization.launch.py',
                 ),

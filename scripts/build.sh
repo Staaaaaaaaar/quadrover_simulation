@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build the robot simulation workspace.
+# Build the Quadrover simulation workspace.
 set -eo pipefail
 
 source /opt/ros/humble/setup.bash
