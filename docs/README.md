@@ -11,7 +11,8 @@
 ```
 quadrover_bringup                    ← 顶层入口（场景 launch）
     └── quadrover_gazebo             ← Gazebo 仿真、桥接、世界文件
-            └── quadrover_description   ← URDF/xacro Quadrover 模型
+            ├── quadrover_description   ← URDF/xacro Quadrover 模型
+            └── quadrover_control       ← drive_mode 驱动预设
 ```
 
 ## 各包文档
@@ -19,6 +20,7 @@ quadrover_bringup                    ← 顶层入口（场景 launch）
 | 包 | 文档 | 职责 |
 |----|------|------|
 | `quadrover_bringup` | [quadrover_bringup.md](quadrover_bringup.md) | 高层场景 launch（example） |
+| `quadrover_control` | [quadrover_control.md](quadrover_control.md) | 四轮驱动模式预设与配置入口 |
 | `quadrover_description` | [quadrover_description.md](quadrover_description.md) | 模块化 URDF/xacro Quadrover 描述 |
 | `quadrover_gazebo` | [quadrover_gazebo.md](quadrover_gazebo.md) | Gazebo 世界、launch、ROS-GZ 桥接 |
 

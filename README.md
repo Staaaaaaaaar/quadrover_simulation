@@ -15,6 +15,7 @@
 | 包 | 说明 |
 |---|---|
 | `quadrover_description` | 模块化 xacro：底盘、传感器、Gazebo 插件 |
+| `quadrover_control` | 四轮驱动模式配置（`drive_mode` 预设档） |
 | `quadrover_gazebo` | 世界文件、launch、RViz、ROS-GZ 桥接 |
 | `quadrover_bringup` | 高层 launch：`sim_example` |
 
@@ -74,7 +75,8 @@ ros2 launch quadrover_gazebo spawn_quadrover_sensors.launch.py rviz:=true gui:=t
 | `gui` | `false` | 是否打开 Gazebo GUI |
 | `rviz` | `false` | 是否启动 RViz2 |
 | `render_engine` | `ogre2` | 渲染后端（Fortress 默认） |
-| `use_diff_drive` | `true` | Gazebo DiffDrive 插件 |
+| `drive_mode` | `diff_drive`（bringup）/`passive_fixed`（gazebo） | 驱动模式预设：`diff_drive`/`passive_fixed`/`passive_free`/`custom` |
+| `use_diff_drive` | 随 `drive_mode` 预设 | 仅在 `drive_mode:=custom` 时手动指定 |
 | `spawn_x/y/z` | 因场景而异 | 机器人初始位姿 |
 
 ### 位姿话题
@@ -92,6 +94,13 @@ ros2 launch quadrover_gazebo spawn_quadrover_sensors.launch.py rviz:=true gui:=t
 
 ```bash
 ros2 run teleop_twist_keyboard teleop_twist_keyboard
+```
+
+如需手动覆盖驱动细节，可使用 `custom`：
+
+```bash
+ros2 launch quadrover_gazebo spawn_quadrover_sensors.launch.py \
+  drive_mode:=custom use_diff_drive:=true wheel_joint_type:=continuous
 ```
 
 ## ROS 话题

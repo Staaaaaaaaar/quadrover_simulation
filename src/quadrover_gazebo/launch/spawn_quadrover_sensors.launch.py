@@ -1,3 +1,4 @@
+import json
 import os
 import re
 
@@ -44,6 +45,36 @@ def _read_world_name(world_path):
     return 'default'
 
 
+def _load_drive_mode_profiles():
+    pkg_quadrover_control = get_package_share_directory('quadrover_control')
+    profile_path = os.path.join(pkg_quadrover_control, 'config', 'drive_modes.json')
+    with open(profile_path, encoding='utf-8') as profile_file:
+        return json.load(profile_file)
+
+
+def _resolve_drive_config(context):
+    drive_mode = LaunchConfiguration('drive_mode').perform(context)
+    wheel_joint_type = LaunchConfiguration('wheel_joint_type').perform(context)
+    use_diff_drive = LaunchConfiguration('use_diff_drive').perform(context)
+    use_joint_state_publisher = LaunchConfiguration('use_joint_state_publisher').perform(context)
+
+    if drive_mode == 'custom':
+        return wheel_joint_type, use_diff_drive, use_joint_state_publisher
+
+    profiles = _load_drive_mode_profiles()
+    profile = profiles.get(drive_mode)
+    if profile is None:
+        available_modes = ', '.join(sorted(list(profiles.keys()) + ['custom']))
+        raise RuntimeError(
+            f'Unsupported drive_mode "{drive_mode}". Available: {available_modes}'
+        )
+
+    wheel_joint_type = str(profile['wheel_joint_type'])
+    use_diff_drive = 'true' if profile['use_diff_drive'] else 'false'
+    use_joint_state_publisher = 'true' if profile['use_joint_state_publisher'] else 'false'
+    return wheel_joint_type, use_diff_drive, use_joint_state_publisher
+
+
 def _launch_setup(context, *args, **kwargs):
     pkg_ros_gz_sim = get_package_share_directory('ros_gz_sim')
 
@@ -53,17 +84,14 @@ def _launch_setup(context, *args, **kwargs):
         world_name = _read_world_name(world)
 
     use_sim_time = LaunchConfiguration('use_sim_time').perform(context) == 'true'
-    wheel_joint_type = LaunchConfiguration('wheel_joint_type').perform(context)
-    use_diff_drive = LaunchConfiguration('use_diff_drive').perform(context)
+    wheel_joint_type, use_diff_drive, use_joint_state_publisher = _resolve_drive_config(context)
     spawn_z = LaunchConfiguration('spawn_z').perform(context)
     spawn_x = LaunchConfiguration('spawn_x').perform(context)
     spawn_y = LaunchConfiguration('spawn_y').perform(context)
     rviz_enabled = LaunchConfiguration('rviz').perform(context) == 'true'
     gui_enabled = LaunchConfiguration('gui').perform(context) == 'true'
     render_engine = LaunchConfiguration('render_engine').perform(context)
-    use_joint_state_publisher = (
-        LaunchConfiguration('use_joint_state_publisher').perform(context) == 'true'
-    )
+    use_joint_state_publisher_enabled = (use_joint_state_publisher == 'true')
 
     quadrover_description = Command([
         'xacro ',
@@ -129,7 +157,7 @@ def _launch_setup(context, *args, **kwargs):
         ),
     ]
 
-    if use_joint_state_publisher:
+    if use_joint_state_publisher_enabled:
         nodes.append(
             Node(
                 package='quadrover_gazebo',
@@ -180,6 +208,11 @@ def generate_launch_description():
         ),
         DeclareLaunchArgument('wheel_joint_type', default_value='fixed'),
         DeclareLaunchArgument('use_diff_drive', default_value='false'),
+        DeclareLaunchArgument(
+            'drive_mode',
+            default_value='passive_fixed',
+            description='Drive profile from quadrover_control (or custom)',
+        ),
         DeclareLaunchArgument('use_joint_state_publisher', default_value='false'),
         DeclareLaunchArgument('spawn_z', default_value='0.23'),
         DeclareLaunchArgument('spawn_x', default_value='0.0'),

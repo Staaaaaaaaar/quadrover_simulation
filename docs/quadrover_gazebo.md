@@ -37,6 +37,7 @@ quadrover_gazebo/
 ### 运行时依赖（exec_depend）
 
 - `quadrover_description`
+- `quadrover_control`
 - `ros_gz_sim`, `ros_gz_bridge`, `ros_gz_image`
 - `robot_state_publisher`, `rclpy`, `xacro`, `rviz2`
 
@@ -53,9 +54,10 @@ quadrover_gazebo/
 | `use_sim_time` | `true` | 仿真时钟 |
 | `world` | `worlds/empty.sdf` | SDF 世界路径 |
 | `world_name` | `''` | Gazebo world 名称（空则自动从 SDF 解析） |
+| `drive_mode` | `passive_fixed` | 驱动模式预设（来自 `quadrover_control`） |
 | `wheel_joint_type` | `fixed` | 传给 xacro |
-| `use_diff_drive` | `false` | 传给 xacro，启用 Gazebo DiffDrive 插件 |
-| `use_joint_state_publisher` | `false` | 启动空 joint_states 发布器 |
+| `use_diff_drive` | `false` | 仅 `drive_mode=custom` 时生效 |
+| `use_joint_state_publisher` | `false` | 仅 `drive_mode=custom` 时生效 |
 | `spawn_x/y/z` | `0.0 / 0.0 / 0.23` | 生成位置 |
 | `rviz` | `false` | 启动 RViz2 |
 | `gui` | `false` | Gazebo GUI |
@@ -67,8 +69,10 @@ quadrover_gazebo/
 ros2 launch quadrover_gazebo spawn_quadrover_sensors.launch.py rviz:=true gui:=true
 ros2 launch quadrover_gazebo spawn_quadrover_sensors.launch.py \
   world:=$(ros2 pkg prefix quadrover_gazebo)/share/quadrover_gazebo/worlds/example.sdf \
-  use_diff_drive:=true wheel_joint_type:=continuous
+  drive_mode:=diff_drive
 ```
+
+`drive_mode` 可选值：`diff_drive`、`passive_fixed`、`passive_free`、`custom`。当为 `custom` 时，继续使用 `wheel_joint_type`、`use_diff_drive`、`use_joint_state_publisher` 手动配置。
 
 **启动的进程：**
 

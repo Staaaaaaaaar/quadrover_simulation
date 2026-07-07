@@ -1,0 +1,20 @@
+{
+  "diff_drive": {
+    "description": "Enable Gazebo DiffDrive with continuous wheel joints.",
+    "wheel_joint_type": "continuous",
+    "use_diff_drive": true,
+    "use_joint_state_publisher": false
+  },
+  "passive_fixed": {
+    "description": "Disable drivetrain and lock wheel joints for sensor-only runs.",
+    "wheel_joint_type": "fixed",
+    "use_diff_drive": false,
+    "use_joint_state_publisher": true
+  },
+  "passive_free": {
+    "description": "Disable drivetrain with free-rolling wheel joints.",
+    "wheel_joint_type": "continuous",
+    "use_diff_drive": false,
+    "use_joint_state_publisher": false
+  }
+}
