@@ -4,7 +4,7 @@
 
 ## 工作空间概览
 
-基于 **ROS 2 Humble** + **Gazebo Fortress**（`ros_gz`）的四轮移动机器人仿真环境，集成 3D LiDAR、IMU、RGB-D 相机，适用于传感器联调与导航算法开发。底盘驱动由 **quadrover_control** 独立子包提供（`DiffDrive` / `MecanumDrive`）；位姿以话题形式发布（`/odom/wheel`、`/loc/gazebo`），不维护 map/odom TF。
+基于 **ROS 2 Humble** + **Gazebo Fortress**（`ros_gz`）的四轮移动机器人仿真环境，集成 3D LiDAR、IMU、RGB-D 相机，适用于传感器联调与导航算法开发。底盘驱动由 **quadrover_control** 独立子包提供（`DiffDrive` / `MecanumDrive`）；位姿以话题形式发布（`/odom/wheel`、`/loc/gazebo`），不维护 `map→odom`，`odom→base_link` 可按参数开启。
 
 ## 包依赖关系
 
@@ -35,7 +35,7 @@ quadrover_bringup                    ← 顶层入口（场景 launch）
 | 话题 | 类型 | 方向 | 来源 |
 |------|------|------|------|
 | `/cmd_vel` | `geometry_msgs/Twist` | 订阅 | Gazebo 轮驱插件（DiffDrive/MecanumDrive） |
-| `/odom/wheel` | `nav_msgs/Odometry` | 发布 | Gazebo 轮驱插件（坐标系随 `drive_mode` 而异） |
+| `/odom/wheel` | `nav_msgs/Odometry` | 发布 | 轮式里程计归一化节点（默认 `odom` → `base_link`） |
 | `/loc/gazebo` | `nav_msgs/Odometry` | 发布 | Gazebo OdometryPublisher（`map` → `base_link` 真值） |
 | `/tf` | `tf2_msgs/TFMessage` | 发布 | robot_state_publisher（URDF 传感器链） |
 | `/joint_states` | `sensor_msgs/JointState` | 发布 | Gazebo JointStatePublisher |

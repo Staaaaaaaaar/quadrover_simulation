@@ -8,7 +8,7 @@
 | 构建类型 | ament_cmake + ament_cmake_python |
 | 描述 | Gazebo Fortress 仿真 launch、世界文件与 ROS-GZ 桥接 |
 
-本包是仿真的核心运行时包，负责启动 Gazebo、生成机器人、桥接 Gazebo 与 ROS 2 话题，并提供预配置的 RViz 与世界场景。本包**不维护** map/odom TF，仅桥接位姿话题 `/odom/wheel` 与 `/loc/gazebo`。
+本包是仿真的核心运行时包，负责启动 Gazebo、生成机器人、桥接 Gazebo 与 ROS 2 话题，并提供预配置的 RViz 与世界场景。本包不维护 `map→odom`；`/odom/wheel` 统一为 `odom→base_link`，并可按参数决定是否发布同名 TF。
 
 ## 文件结构
 
@@ -26,7 +26,8 @@ quadrover_gazebo/
 ├── rviz/
 │   └── quadrover.rviz              # RViz2 预配置
 ├── scripts/
-│   └── static_joint_state_publisher.py  # 空 joint_states 发布器
+│   ├── static_joint_state_publisher.py  # 空 joint_states 发布器
+│   └── wheel_odom_normalizer.py         # 统一 /odom/wheel 帧并可选发布 TF
 └── worlds/
     ├── empty.sdf                   # 空世界
     └── example.sdf                 # 室内主要测试用例（10 m 封闭房间）
@@ -55,6 +56,9 @@ quadrover_gazebo/
 | `world` | `worlds/empty.sdf` | SDF 世界路径 |
 | `world_name` | `''` | Gazebo world 名称（空则自动从 SDF 解析） |
 | `drive_mode` | `diff_drive` | 驱动模式（来自 `quadrover_control`）：`diff_drive` / `mecanum_drive` |
+| `publish_wheel_odom_tf` | `false` | 是否发布 `odom→base_link` TF |
+| `wheel_odom_frame_id` | `odom` | `/odom/wheel.header.frame_id` |
+| `wheel_base_frame_id` | `base_link` | `/odom/wheel.child_frame_id` |
 | `spawn_x/y/z` | `0.0 / 0.0 / 0.23` | 生成位置 |
 | `rviz` | `false` | 启动 RViz2 |
 | `gui` | `false` | Gazebo GUI |
@@ -79,7 +83,8 @@ ros2 launch quadrover_gazebo spawn_quadrover_sensors.launch.py \
 | 2 | robot_state_publisher | `robot_state_publisher/robot_state_publisher` |
 | 3 | 机器人生成 | `ros_gz_sim/create` |
 | 4 | ROS-GZ 桥接 | `ros_gz_bridge/parameter_bridge` |
-| 5 | *(可选)* RViz2 | `rviz2/rviz2` |
+| 5 | 轮式里程计归一化 | `quadrover_gazebo/wheel_odom_normalizer.py` |
+| 6 | *(可选)* RViz2 | `rviz2/rviz2` |
 
 ## 自定义节点（当前默认不启用）
 
@@ -153,12 +158,12 @@ ros2 launch quadrover_gazebo spawn_quadrover_sensors.launch.py \
 | ROS 话题 | 方向 | 类型 |
 |----------|------|------|
 | `/cmd_vel` | ROS→GZ | `geometry_msgs/Twist` |
-| `/odom/wheel` | GZ→ROS | `nav_msgs/Odometry` |
+| `/odom/wheel_raw` | GZ→ROS | `nav_msgs/Odometry` |
 | `/joint_states` | GZ→ROS | `sensor_msgs/JointState` |
 
-> `mecanum_drive` 模式下 Gazebo 原生发布 `/model/quadrover/odometry_with_covariance`（`gz.msgs.OdometryWithCovariance`），launch 会重映射到统一 ROS 话题 `/odom/wheel`。
+> `mecanum_drive` 模式下 Gazebo 原生发布 `/model/quadrover/odometry_with_covariance`（`gz.msgs.OdometryWithCovariance`），launch 会重映射到统一 ROS 话题 `/odom/wheel_raw`。
 >
-> Gazebo 插件内部 TF 发布到 `*/tf_internal`，不桥接到 ROS；map/odom TF 由外部 loc/odom 融合节点维护。
+> 两种驱动模式都先桥接到 `/odom/wheel_raw`，再由 `wheel_odom_normalizer` 统一输出 `/odom/wheel`（默认 `odom→base_link`），并可选发布该 TF。
 
 ### rviz2（可选）
 
@@ -236,7 +241,12 @@ ros2 launch quadrover_gazebo spawn_quadrover_sensors.launch.py \
                     └────────┬────────┘
                              │ parameter_bridge
                              ▼
-  /cmd_vel, /odom/wheel, /joint_states ────────► ROS 侧
+  /cmd_vel, /odom/wheel_raw, /joint_states ────────► ROS 侧
+                                │
+                                ▼
+                    wheel_odom_normalizer
+                                │
+                                └──────► /odom/wheel (+ 可选 odom→base_link TF)
 
   Gazebo OdometryPublisher ──bridge──► /loc/gazebo
   Gazebo Sensors ──bridge──► /imu/data, /lidar/points,
@@ -248,5 +258,5 @@ ros2 launch quadrover_gazebo spawn_quadrover_sensors.launch.py \
 ## CMake 目标
 
 - 安装 `config/`, `launch/`, `worlds/`, `rviz/`, `meshes/` 目录
-- 安装 `scripts/static_joint_state_publisher.py` 至 `lib/quadrover_gazebo`
+- 安装 `scripts/static_joint_state_publisher.py`、`scripts/wheel_odom_normalizer.py` 至 `lib/quadrover_gazebo`
 - 无 C++ 编译目标

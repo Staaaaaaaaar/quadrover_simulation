@@ -33,7 +33,7 @@ quadrover_control/
 | `mecanum_drive` | `ignition::gazebo::systems::MecanumDrive` | 全向麦克纳姆轮驱，支持平面全向运动 |
 
 > 已移除 `custom`、`passive_fixed`、`passive_free` 等非驱动模式。
-> `mecanum_drive` 在 Fortress 中输出 `OdometryWithCovariance`，并在 launch 中统一映射为 ROS 侧 `/odom/wheel`。
+> `mecanum_drive` 在 Fortress 中输出 `OdometryWithCovariance`，并在 launch 中先桥接为 `/odom/wheel_raw`，再统一归一化到 ROS 侧 `/odom/wheel`（默认 `odom→base_link`）。
 
 ## 使用方式
 

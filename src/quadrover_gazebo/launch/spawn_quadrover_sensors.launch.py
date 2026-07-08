@@ -84,6 +84,11 @@ def _launch_setup(context, *args, **kwargs):
     rviz_enabled = LaunchConfiguration('rviz').perform(context) == 'true'
     gui_enabled = LaunchConfiguration('gui').perform(context) == 'true'
     render_engine = LaunchConfiguration('render_engine').perform(context)
+    publish_wheel_odom_tf = (
+        LaunchConfiguration('publish_wheel_odom_tf').perform(context) == 'true'
+    )
+    wheel_odom_frame_id = LaunchConfiguration('wheel_odom_frame_id').perform(context)
+    wheel_base_frame_id = LaunchConfiguration('wheel_base_frame_id').perform(context)
 
     quadrover_description = Command([
         'xacro ',
@@ -106,8 +111,10 @@ def _launch_setup(context, *args, **kwargs):
     ]
     if drive_mode == 'mecanum_drive':
         bridge_remappings.append(
-            ('/model/quadrover/odometry_with_covariance', '/odom/wheel')
+            ('/model/quadrover/odometry_with_covariance', '/odom/wheel_raw')
         )
+    else:
+        bridge_remappings.append(('/odom/wheel', '/odom/wheel_raw'))
 
     nodes = [
         IncludeLaunchDescription(
@@ -152,6 +159,20 @@ def _launch_setup(context, *args, **kwargs):
             parameters=[{'use_sim_time': use_sim_time}],
             output='screen',
         ),
+        Node(
+            package='quadrover_gazebo',
+            executable='wheel_odom_normalizer.py',
+            name='wheel_odom_normalizer',
+            parameters=[{
+                'use_sim_time': use_sim_time,
+                'input_topic': '/odom/wheel_raw',
+                'output_topic': '/odom/wheel',
+                'odom_frame_id': wheel_odom_frame_id,
+                'base_frame_id': wheel_base_frame_id,
+                'publish_tf': publish_wheel_odom_tf,
+            }],
+            output='screen',
+        ),
     ]
 
     if rviz_enabled:
@@ -193,6 +214,21 @@ def generate_launch_description():
             'drive_mode',
             default_value='diff_drive',
             description='Drive profile from quadrover_control',
+        ),
+        DeclareLaunchArgument(
+            'publish_wheel_odom_tf',
+            default_value='false',
+            description='Publish TF from wheel odometry (odom->base_link)',
+        ),
+        DeclareLaunchArgument(
+            'wheel_odom_frame_id',
+            default_value='odom',
+            description='Frame id for /odom/wheel header.frame_id',
+        ),
+        DeclareLaunchArgument(
+            'wheel_base_frame_id',
+            default_value='base_link',
+            description='Frame id for /odom/wheel child_frame_id',
         ),
         DeclareLaunchArgument('spawn_z', default_value='0.23'),
         DeclareLaunchArgument('spawn_x', default_value='0.0'),

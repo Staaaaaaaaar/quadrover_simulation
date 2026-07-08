@@ -127,7 +127,7 @@ base_link
 | 话题 | 类型 | 方向 | 来源 |
 |------|------|------|------|
 | `/cmd_vel` | `geometry_msgs/Twist` | 订阅 | 轮驱插件（DiffDrive/MecanumDrive） |
-| `/odom/wheel` | `nav_msgs/Odometry` | 发布 | 轮驱插件（坐标系随 `drive_mode` 而异） |
+| `/odom/wheel` | `nav_msgs/Odometry` | 发布 | 轮式里程计归一化节点输出（默认 `odom` → `base_link`） |
 | `/loc/gazebo` | `nav_msgs/Odometry` | 发布 | OdometryPublisher 插件（`map` → `base_link` 真值） |
 | `/joint_states` | `sensor_msgs/JointState` | 发布 | JointStatePublisher 插件 |
 | `/imu/data` | `sensor_msgs/Imu` | 发布 | IMU 传感器 |
