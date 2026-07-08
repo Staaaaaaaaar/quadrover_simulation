@@ -16,7 +16,7 @@ from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 
 
-def _bridge_arguments(use_diff_drive):
+def _bridge_arguments(drive_mode):
     args = [
         '/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock',
         '/loc/gazebo@nav_msgs/msg/Odometry[gz.msgs.Odometry',
@@ -26,13 +26,16 @@ def _bridge_arguments(use_diff_drive):
         '/camera/color/camera_info@sensor_msgs/msg/CameraInfo[gz.msgs.CameraInfo',
         '/camera/depth/image_raw@sensor_msgs/msg/Image[gz.msgs.Image',
         '/camera/depth/camera_info@sensor_msgs/msg/CameraInfo[gz.msgs.CameraInfo',
+        '/cmd_vel@geometry_msgs/msg/Twist]gz.msgs.Twist',
+        '/joint_states@sensor_msgs/msg/JointState[gz.msgs.Model',
     ]
-    if use_diff_drive == 'true':
-        args.extend([
-            '/cmd_vel@geometry_msgs/msg/Twist]gz.msgs.Twist',
-            '/odom/wheel@nav_msgs/msg/Odometry[gz.msgs.Odometry',
-            '/joint_states@sensor_msgs/msg/JointState[gz.msgs.Model',
-        ])
+    if drive_mode == 'mecanum_drive':
+        # Fortress mecanum drive publishes OdometryWithCovariance on this topic.
+        args.append(
+            '/model/quadrover/odometry_with_covariance@nav_msgs/msg/Odometry[gz.msgs.OdometryWithCovariance'
+        )
+    else:
+        args.append('/odom/wheel@nav_msgs/msg/Odometry[gz.msgs.Odometry')
     return args
 
 
@@ -54,25 +57,15 @@ def _load_drive_mode_profiles():
 
 def _resolve_drive_config(context):
     drive_mode = LaunchConfiguration('drive_mode').perform(context)
-    wheel_joint_type = LaunchConfiguration('wheel_joint_type').perform(context)
-    use_diff_drive = LaunchConfiguration('use_diff_drive').perform(context)
-    use_joint_state_publisher = LaunchConfiguration('use_joint_state_publisher').perform(context)
-
-    if drive_mode == 'custom':
-        return wheel_joint_type, use_diff_drive, use_joint_state_publisher
 
     profiles = _load_drive_mode_profiles()
-    profile = profiles.get(drive_mode)
-    if profile is None:
-        available_modes = ', '.join(sorted(list(profiles.keys()) + ['custom']))
+    if drive_mode not in profiles:
+        available_modes = ', '.join(sorted(profiles.keys()))
         raise RuntimeError(
             f'Unsupported drive_mode "{drive_mode}". Available: {available_modes}'
         )
 
-    wheel_joint_type = str(profile['wheel_joint_type'])
-    use_diff_drive = 'true' if profile['use_diff_drive'] else 'false'
-    use_joint_state_publisher = 'true' if profile['use_joint_state_publisher'] else 'false'
-    return wheel_joint_type, use_diff_drive, use_joint_state_publisher
+    return drive_mode
 
 
 def _launch_setup(context, *args, **kwargs):
@@ -84,14 +77,13 @@ def _launch_setup(context, *args, **kwargs):
         world_name = _read_world_name(world)
 
     use_sim_time = LaunchConfiguration('use_sim_time').perform(context) == 'true'
-    wheel_joint_type, use_diff_drive, use_joint_state_publisher = _resolve_drive_config(context)
+    drive_mode = _resolve_drive_config(context)
     spawn_z = LaunchConfiguration('spawn_z').perform(context)
     spawn_x = LaunchConfiguration('spawn_x').perform(context)
     spawn_y = LaunchConfiguration('spawn_y').perform(context)
     rviz_enabled = LaunchConfiguration('rviz').perform(context) == 'true'
     gui_enabled = LaunchConfiguration('gui').perform(context) == 'true'
     render_engine = LaunchConfiguration('render_engine').perform(context)
-    use_joint_state_publisher_enabled = (use_joint_state_publisher == 'true')
 
     quadrover_description = Command([
         'xacro ',
@@ -100,8 +92,7 @@ def _launch_setup(context, *args, **kwargs):
             'urdf',
             'quadrover.urdf.xacro',
         ]),
-        f' wheel_joint_type:={wheel_joint_type}',
-        f' use_diff_drive:={use_diff_drive}',
+        f' drive_mode:={drive_mode}',
     ])
 
     render_flags = f'--render-engine {render_engine}'
@@ -109,6 +100,14 @@ def _launch_setup(context, *args, **kwargs):
         gz_args = f'-r {render_flags} {world}'
     else:
         gz_args = f'-r -s --headless-rendering {render_flags} {world}'
+
+    bridge_remappings = [
+        ('/lidar/scan/points', '/lidar/points'),
+    ]
+    if drive_mode == 'mecanum_drive':
+        bridge_remappings.append(
+            ('/model/quadrover/odometry_with_covariance', '/odom/wheel')
+        )
 
     nodes = [
         IncludeLaunchDescription(
@@ -148,28 +147,12 @@ def _launch_setup(context, *args, **kwargs):
         Node(
             package='ros_gz_bridge',
             executable='parameter_bridge',
-            arguments=_bridge_arguments(use_diff_drive),
-            remappings=[
-                ('/lidar/scan/points', '/lidar/points'),
-            ],
+            arguments=_bridge_arguments(drive_mode),
+            remappings=bridge_remappings,
             parameters=[{'use_sim_time': use_sim_time}],
             output='screen',
         ),
     ]
-
-    if use_joint_state_publisher_enabled:
-        nodes.append(
-            Node(
-                package='quadrover_gazebo',
-                executable='static_joint_state_publisher.py',
-                name='static_joint_state_publisher',
-                parameters=[{
-                    'use_sim_time': use_sim_time,
-                    'rate': 30.0,
-                }],
-                output='screen',
-            )
-        )
 
     if rviz_enabled:
         pkg_quadrover_gazebo = get_package_share_directory('quadrover_gazebo')
@@ -206,14 +189,11 @@ def generate_launch_description():
             default_value='',
             description='Gazebo world name (auto-detected from SDF when empty)',
         ),
-        DeclareLaunchArgument('wheel_joint_type', default_value='fixed'),
-        DeclareLaunchArgument('use_diff_drive', default_value='false'),
         DeclareLaunchArgument(
             'drive_mode',
-            default_value='passive_fixed',
-            description='Drive profile from quadrover_control (or custom)',
+            default_value='diff_drive',
+            description='Drive profile from quadrover_control',
         ),
-        DeclareLaunchArgument('use_joint_state_publisher', default_value='false'),
         DeclareLaunchArgument('spawn_z', default_value='0.23'),
         DeclareLaunchArgument('spawn_x', default_value='0.0'),
         DeclareLaunchArgument('spawn_y', default_value='0.0'),

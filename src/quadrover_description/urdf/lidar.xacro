@@ -40,10 +40,6 @@
   </joint>
 
   <gazebo reference="lidar_link">
-    <material>
-      <ambient>0.3 0.3 0.3 1</ambient>
-      <diffuse>0.3 0.3 0.3 1</diffuse>
-    </material>
     <sensor name="lidar" type="gpu_lidar">
       <always_on>true</always_on>
       <update_rate>10</update_rate>

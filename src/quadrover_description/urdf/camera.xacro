@@ -28,10 +28,6 @@
   </joint>
 
   <gazebo reference="camera_link">
-    <material>
-      <ambient>0.1 0.1 0.8 1</ambient>
-      <diffuse>0.1 0.1 0.8 1</diffuse>
-    </material>
     <sensor name="rgb_camera" type="camera">
       <always_on>true</always_on>
       <update_rate>15</update_rate>

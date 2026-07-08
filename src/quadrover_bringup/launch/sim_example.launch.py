@@ -29,8 +29,6 @@ def generate_launch_description():
         DeclareLaunchArgument('spawn_x', default_value='0.0'),
         DeclareLaunchArgument('spawn_y', default_value='0.0'),
         DeclareLaunchArgument('spawn_z', default_value='0.23'),
-        DeclareLaunchArgument('wheel_joint_type', default_value='continuous'),
-        DeclareLaunchArgument('use_diff_drive', default_value='true'),
         DeclareLaunchArgument('drive_mode', default_value='diff_drive'),
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
@@ -45,10 +43,7 @@ def generate_launch_description():
                 'spawn_x': LaunchConfiguration('spawn_x'),
                 'spawn_y': LaunchConfiguration('spawn_y'),
                 'spawn_z': LaunchConfiguration('spawn_z'),
-                'wheel_joint_type': LaunchConfiguration('wheel_joint_type'),
-                'use_diff_drive': LaunchConfiguration('use_diff_drive'),
                 'drive_mode': LaunchConfiguration('drive_mode'),
-                'use_joint_state_publisher': 'false',
             }.items(),
         ),
     ])
