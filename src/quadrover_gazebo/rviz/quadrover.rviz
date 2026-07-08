@@ -120,7 +120,7 @@ Visualization Manager:
         Value: true
       Enabled: false
       Keep: 100
-      Name: Odometry
+      Name: Wheel Odom (/odom/wheel)
       Position Tolerance: 0.1
       Shape:
         Alpha: 1

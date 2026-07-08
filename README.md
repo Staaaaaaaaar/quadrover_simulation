@@ -1,10 +1,10 @@
 # Quadrover
 
-基于 **ROS 2 Humble** 与 **Gazebo Fortress** 的四轮移动机器人仿真环境，集成 LiDAR、IMU、RGB-D 相机与 Gazebo DiffDrive 差速驱动，适用于原生 Linux 下的传感器联调与导航算法开发。
+基于 **ROS 2 Humble** 与 **Gazebo Fortress** 的四轮移动机器人仿真环境，集成 LiDAR、IMU、RGB-D 相机，并支持多种 Gazebo 轮式驱动插件，适用于原生 Linux 下的传感器联调与导航算法开发。
 
 ## 功能概览
 
-- 四轮差速底盘，支持 `/cmd_vel` 控制与 `/odom/wheel` 轮式里程计
+- 四轮底盘，支持 `/cmd_vel` 控制与 `/odom/wheel` 轮式里程计
 - 仿真真值位姿发布在 `/loc/gazebo`（`map` → `base_link`）
 - 3D LiDAR（`/lidar/points`）、IMU（`/imu/data`）、RGB/深度相机
 - 内置室内 example 测试场景与空世界；支持自定义 mesh 场景导入
@@ -15,7 +15,7 @@
 | 包 | 说明 |
 |---|---|
 | `quadrover_description` | 模块化 xacro：底盘、传感器、Gazebo 插件 |
-| `quadrover_control` | 四轮驱动模式配置（`drive_mode` 预设档） |
+| `quadrover_control` | 独立驱动子包：封装 Gazebo 轮式驱动插件与 `drive_mode` 配置 |
 | `quadrover_gazebo` | 世界文件、launch、RViz、ROS-GZ 桥接 |
 | `quadrover_bringup` | 高层 launch：`sim_example` |
 
@@ -75,8 +75,7 @@ ros2 launch quadrover_gazebo spawn_quadrover_sensors.launch.py rviz:=true gui:=t
 | `gui` | `false` | 是否打开 Gazebo GUI |
 | `rviz` | `false` | 是否启动 RViz2 |
 | `render_engine` | `ogre2` | 渲染后端（Fortress 默认） |
-| `drive_mode` | `diff_drive`（bringup）/`passive_fixed`（gazebo） | 驱动模式预设：`diff_drive`/`passive_fixed`/`passive_free`/`custom` |
-| `use_diff_drive` | 随 `drive_mode` 预设 | 仅在 `drive_mode:=custom` 时手动指定 |
+| `drive_mode` | `diff_drive` | 驱动模式：`diff_drive`/`mecanum_drive` |
 | `spawn_x/y/z` | 因场景而异 | 机器人初始位姿 |
 
 ### 位姿话题
@@ -85,7 +84,7 @@ ros2 launch quadrover_gazebo spawn_quadrover_sensors.launch.py rviz:=true gui:=t
 
 | 话题 | 类型 | 坐标系 | 说明 |
 |---|---|---|---|
-| `/odom/wheel` | `nav_msgs/Odometry` | `odom` → `base_link` | Gazebo DiffDrive 轮式里程计（有漂移） |
+| `/odom/wheel` | `nav_msgs/Odometry` | 随 `drive_mode` 而异 | Gazebo 轮式驱动插件里程计（有漂移） |
 | `/loc/gazebo` | `nav_msgs/Odometry` | `map` → `base_link` | 仿真真值位姿 |
 
 `robot_state_publisher` 仍发布 URDF 定义的 `base_link` → 传感器 TF。
@@ -96,11 +95,11 @@ ros2 launch quadrover_gazebo spawn_quadrover_sensors.launch.py rviz:=true gui:=t
 ros2 run teleop_twist_keyboard teleop_twist_keyboard
 ```
 
-如需手动覆盖驱动细节，可使用 `custom`：
+切换驱动模式示例：
 
 ```bash
 ros2 launch quadrover_gazebo spawn_quadrover_sensors.launch.py \
-  drive_mode:=custom use_diff_drive:=true wheel_joint_type:=continuous
+  drive_mode:=mecanum_drive
 ```
 
 ## ROS 话题
@@ -108,7 +107,7 @@ ros2 launch quadrover_gazebo spawn_quadrover_sensors.launch.py \
 | 话题 | 类型 | 说明 |
 |---|---|---|
 | `/cmd_vel` | `geometry_msgs/Twist` | 速度指令（→ Gazebo） |
-| `/odom/wheel` | `nav_msgs/Odometry` | 轮式里程计（`odom` → `base_link`） |
+| `/odom/wheel` | `nav_msgs/Odometry` | 轮式里程计（`diff_drive` 为 `odom` 帧，`mecanum_drive` 映射后为 `map` 帧） |
 | `/loc/gazebo` | `nav_msgs/Odometry` | 仿真真值（`map` → `base_link`） |
 | `/joint_states` | `sensor_msgs/JointState` | 关节状态 |
 | `/imu/data` | `sensor_msgs/Imu` | IMU |

@@ -2,7 +2,7 @@
 
 本文档介绍 Quadrover 仿真**运行时**的 ROS 节点、话题与 TF 结构，供联调与对接外部算法时查阅。
 
-适用 launch：`quadrover_gazebo/spawn_quadrover_sensors.launch.py` 及其上层封装（如 `quadrover_bringup` 下的场景 launch）。默认参数下 `use_diff_drive=true` 时发布完整话题集；`rviz:=true` 时额外启动 RViz2。
+适用 launch：`quadrover_gazebo/spawn_quadrover_sensors.launch.py` 及其上层封装（如 `quadrover_bringup` 下的场景 launch）。默认参数下 `drive_mode=diff_drive`；可切换为 `drive_mode=mecanum_drive`。`rviz:=true` 时额外启动 RViz2。
 
 > 本仿真包**不发布** `map→odom` 或 `odom→base_link` TF；位姿以 `/odom/wheel`、`/loc/gazebo` 话题形式提供。
 
@@ -14,7 +14,7 @@
 ┌─────────────────────────────────────────────────────────────┐
 │  Gazebo Sim（gz sim，非 ROS 节点）                            │
 │  ├── 物理引擎、世界场景、Quadrover 模型                        │
-│  ├── DiffDrive / OdometryPublisher / JointState 插件         │
+│  ├── DrivePlugin / OdometryPublisher / JointState 插件       │
 │  └── IMU / LiDAR / RGB-D 传感器                              │
 └──────────────────────────┬──────────────────────────────────┘
                            │ GZ 话题
@@ -40,7 +40,7 @@
 
 ## ROS 节点
 
-`use_diff_drive=true` 且 `rviz:=true` 时，`ros2 node list` 典型输出：
+`drive_mode=diff_drive` 且 `rviz:=true` 时，`ros2 node list` 典型输出：
 
 | 节点 | 包 | 一句话 |
 |------|-----|--------|
@@ -68,7 +68,7 @@
 | 发布 | `/camera/depth/image_raw` | `sensor_msgs/Image` |
 | 发布 | `/camera/depth/camera_info` | `sensor_msgs/CameraInfo` |
 
-> `use_diff_drive=false` 时不桥接 `/cmd_vel`、`/odom/wheel`、`/joint_states`。
+> 所有 `drive_mode` 都会桥接 `/cmd_vel`、`/odom/wheel`、`/joint_states`。
 
 ### `/robot_state_publisher`
 
@@ -107,7 +107,7 @@
 |------|-----|
 | 类型 | `geometry_msgs/Twist` |
 | 发布者 | 外部节点（如 `teleop_twist_keyboard`） |
-| 订阅者 | `/ros_gz_bridge` → Gazebo DiffDrive |
+| 订阅者 | `/ros_gz_bridge` → Gazebo DrivePlugin |
 
 **内容：** 速度指令。`linear.x` 为前进速度（m/s），`angular.z` 为绕 z 轴角速度（rad/s）。
 
@@ -124,11 +124,11 @@ ros2 run teleop_twist_keyboard teleop_twist_keyboard
 | 属性 | 值 |
 |------|-----|
 | 类型 | `nav_msgs/Odometry` |
-| 发布者 | `/ros_gz_bridge`（← Gazebo DiffDrive 插件） |
+| 发布者 | `/ros_gz_bridge`（← Gazebo DrivePlugin） |
 | 频率 | ~30 Hz（配置值；实测约 28 Hz） |
-| 坐标系 | `header.frame_id=odom`，`child_frame_id=base_link` |
+| 坐标系 | `header.frame_id` 随 `drive_mode` 而异，`child_frame_id=base_link` |
 
-**内容：** 轮式里程计位姿与速度。由 DiffDrive 根据轮速积分，**有累积漂移**。包含 `pose.pose`（位姿）、`twist.twist`（速度）；协方差当前均为 0。DiffDrive 为 2D 里程计，静止时 `z=0`。
+**内容：** 轮式里程计位姿与速度。由轮驱插件根据轮速积分，**有累积漂移**。`diff_drive` 直接桥接 `/odom/wheel`；`mecanum_drive` 由 `/model/quadrover/odometry_with_covariance` 重映射到 `/odom/wheel`。包含 `pose.pose`（位姿）、`twist.twist`（速度）；协方差当前均为 0。
 
 #### `/loc/gazebo`
 
@@ -305,7 +305,7 @@ base_link
                               │
          ┌────────────────────┼────────────────────┐
          │                    │                    │
-    DiffDrive           OdometryPublisher    传感器插件
+    DrivePlugin         OdometryPublisher    传感器插件
          │                    │                    │
     /odom/wheel          /loc/gazebo      imu / lidar / camera
     /joint_states                             /clock
@@ -331,7 +331,7 @@ base_link
 | `/clock` | ~1000 | Gazebo 物理步进 |
 | `/joint_states` | ~1000 | 同上 |
 | `/imu/data` | ~95 | IMU 传感器 |
-| `/odom/wheel` | ~30 | DiffDrive 插件 |
+| `/odom/wheel` | ~30 | DrivePlugin |
 | `/loc/gazebo` | ~30 | OdometryPublisher 插件 |
 | `/lidar/points` | 10 | LiDAR 配置 |
 | `/camera/color/image_raw` | 15 | RGB 相机配置 |

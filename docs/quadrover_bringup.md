@@ -44,9 +44,7 @@ quadrover_bringup/
 | `render_engine` | `ogre2` | Gazebo 渲染后端 |
 | `world` | `quadrover_gazebo/worlds/example.sdf` | 世界文件 |
 | `spawn_x/y/z` | `0.0 / 0.0 / 0.23` | 机器人生成位置 |
-| `drive_mode` | `diff_drive` | 驱动模式预设（来自 `quadrover_control`） |
-| `wheel_joint_type` | `continuous` | 轮子关节类型 |
-| `use_diff_drive` | `true` | 仅 `drive_mode=custom` 时生效 |
+| `drive_mode` | `diff_drive` | 驱动模式（来自 `quadrover_control`）：`diff_drive` / `mecanum_drive` |
 
 **启动示例：**
 

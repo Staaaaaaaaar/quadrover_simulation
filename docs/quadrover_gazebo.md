@@ -54,10 +54,7 @@ quadrover_gazebo/
 | `use_sim_time` | `true` | 仿真时钟 |
 | `world` | `worlds/empty.sdf` | SDF 世界路径 |
 | `world_name` | `''` | Gazebo world 名称（空则自动从 SDF 解析） |
-| `drive_mode` | `passive_fixed` | 驱动模式预设（来自 `quadrover_control`） |
-| `wheel_joint_type` | `fixed` | 传给 xacro |
-| `use_diff_drive` | `false` | 仅 `drive_mode=custom` 时生效 |
-| `use_joint_state_publisher` | `false` | 仅 `drive_mode=custom` 时生效 |
+| `drive_mode` | `diff_drive` | 驱动模式（来自 `quadrover_control`）：`diff_drive` / `mecanum_drive` |
 | `spawn_x/y/z` | `0.0 / 0.0 / 0.23` | 生成位置 |
 | `rviz` | `false` | 启动 RViz2 |
 | `gui` | `false` | Gazebo GUI |
@@ -72,7 +69,7 @@ ros2 launch quadrover_gazebo spawn_quadrover_sensors.launch.py \
   drive_mode:=diff_drive
 ```
 
-`drive_mode` 可选值：`diff_drive`、`passive_fixed`、`passive_free`、`custom`。当为 `custom` 时，继续使用 `wheel_joint_type`、`use_diff_drive`、`use_joint_state_publisher` 手动配置。
+`drive_mode` 可选值：`diff_drive`、`mecanum_drive`。
 
 **启动的进程：**
 
@@ -82,14 +79,13 @@ ros2 launch quadrover_gazebo spawn_quadrover_sensors.launch.py \
 | 2 | robot_state_publisher | `robot_state_publisher/robot_state_publisher` |
 | 3 | 机器人生成 | `ros_gz_sim/create` |
 | 4 | ROS-GZ 桥接 | `ros_gz_bridge/parameter_bridge` |
-| 5 | *(可选)* static_joint_state_publisher | `quadrover_gazebo/static_joint_state_publisher.py` |
-| 6 | *(可选)* RViz2 | `rviz2/rviz2` |
+| 5 | *(可选)* RViz2 | `rviz2/rviz2` |
 
-## 自定义节点
+## 自定义节点（当前默认不启用）
 
 ### static_joint_state_publisher.py
 
-为仅有 fixed 关节、无 Gazebo JointStatePublisher 的机器人发布空 `JointState`，保持 TF 链活跃。
+历史兼容脚本：用于在无 Gazebo JointStatePublisher 的场景下发布空 `JointState`。当前 `drive_mode` 路径下由 Gazebo 插件直接发布 `/joint_states`，该脚本默认不启用。
 
 | 属性 | 值 |
 |------|-----|
@@ -152,7 +148,7 @@ ros2 launch quadrover_gazebo spawn_quadrover_sensors.launch.py \
 
 > LiDAR 点云经 remapping：`/lidar/scan/points` → `/lidar/points`
 
-#### 当 `use_diff_drive=true` 时额外桥接
+#### 驱动相关桥接（所有 `drive_mode`）
 
 | ROS 话题 | 方向 | 类型 |
 |----------|------|------|
@@ -160,6 +156,8 @@ ros2 launch quadrover_gazebo spawn_quadrover_sensors.launch.py \
 | `/odom/wheel` | GZ→ROS | `nav_msgs/Odometry` |
 | `/joint_states` | GZ→ROS | `sensor_msgs/JointState` |
 
+> `mecanum_drive` 模式下 Gazebo 原生发布 `/model/quadrover/odometry_with_covariance`（`gz.msgs.OdometryWithCovariance`），launch 会重映射到统一 ROS 话题 `/odom/wheel`。
+>
 > Gazebo 插件内部 TF 发布到 `*/tf_internal`，不桥接到 ROS；map/odom TF 由外部 loc/odom 融合节点维护。
 
 ### rviz2（可选）
@@ -213,7 +211,7 @@ ros2 launch quadrover_gazebo spawn_quadrover_sensors.launch.py \
 ros2 launch quadrover_gazebo spawn_quadrover_sensors.launch.py \
   world:=$(ros2 pkg prefix quadrover_gazebo)/share/quadrover_gazebo/worlds/your_world.sdf \
   spawn_x:=0.0 spawn_y:=0.0 spawn_z:=0.23 \
-  use_diff_drive:=true wheel_joint_type:=continuous \
+  drive_mode:=mecanum_drive \
   gui:=true rviz:=true
 ```
 
@@ -232,9 +230,9 @@ ros2 launch quadrover_gazebo spawn_quadrover_sensors.launch.py \
 ## 话题数据流
 
 ```
-                    ┌─────────────────┐
-  /cmd_vel ────────►│ Gazebo DiffDrive│──────► /odom/wheel (GZ)
-  (ROS)             │     Plugin      │──────► /joint_states (GZ)
+                    ┌──────────────────────────┐
+  /cmd_vel ────────►│ Gazebo Drive Plugin      │──────► /odom/wheel (GZ)
+  (ROS)             │ (DiffDrive/MecanumDrive)│──────► /joint_states (GZ)
                     └────────┬────────┘
                              │ parameter_bridge
                              ▼

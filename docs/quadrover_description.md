@@ -8,7 +8,7 @@
 | 构建类型 | ament_cmake |
 | 描述 | 四轮洞穴探索机器人的 URDF/xacro 描述 |
 
-本包定义 Quadrover 的运动学树、物理属性、Gazebo 传感器与驱动插件。采用模块化 xacro 设计，通过参数切换驱动模式。
+本包定义 Quadrover 的运动学树、物理属性与 Gazebo 传感器。驱动插件已独立拆分到 `quadrover_control` 子包，通过 `drive_mode` 进行选择。
 
 ## 文件结构
 
@@ -22,7 +22,7 @@ quadrover_description/
     ├── imu.xacro              # IMU 传感器
     ├── lidar.xacro            # 3D GPU LiDAR
     ├── camera.xacro           # RGB + 深度相机
-    └── gazebo_plugins.xacro   # DiffDrive + JointStatePublisher
+    └── gazebo_plugins.xacro   # OdometryPublisher（map 真值）
 ```
 
 ## 依赖
@@ -30,6 +30,7 @@ quadrover_description/
 ### 运行时依赖（exec_depend）
 
 - `xacro`
+- `quadrover_control`
 - `robot_state_publisher`
 - `joint_state_publisher`
 - `rviz2`
@@ -40,15 +41,13 @@ quadrover_description/
 
 | 参数 | 默认值 | 说明 |
 |------|--------|------|
-| `wheel_joint_type` | `fixed` | 轮子关节类型（`fixed` 或 `continuous`） |
-| `use_diff_drive` | `false` | 是否插入 Gazebo DiffDrive 插件 |
+| `drive_mode` | `diff_drive` | 驱动模式（由 `quadrover_control` 提供） |
 
 **xacro 调用示例：**
 
 ```bash
 xacro src/quadrover_description/urdf/quadrover.urdf.xacro \
-  wheel_joint_type:=continuous \
-  use_diff_drive:=true
+  drive_mode:=mecanum_drive
 ```
 
 ## 运动学树（TF 树）
@@ -118,25 +117,8 @@ base_link
 
 ### gazebo_plugins.xacro
 
-当 `use_diff_drive=true` 时加载：
-
-#### DiffDrive 插件（`gz-sim-diff-drive-system`）
-
-| 配置项 | 值 |
-|--------|-----|
-| 左轮关节 | `left_front_wheel_joint`, `left_rear_wheel_joint` |
-| 右轮关节 | `right_front_wheel_joint`, `right_rear_wheel_joint` |
-| 轮距 / 半径 | 0.5 m / 0.15 m |
-| 订阅话题 | `/cmd_vel` (`geometry_msgs/Twist`) |
-| 发布话题 | `/odom/wheel`（TF 发布到内部话题，不桥接） |
-| 坐标系 | `odom` → `base_link` |
-| 线速度限制 | ±1.0 m/s |
-| 角速度限制 | ±1.5 rad/s |
-| 里程计发布频率 | 30 Hz |
-
-#### JointStatePublisher 插件
-
-- 发布 Gazebo 侧 `/joint_states`
+仅包含 Gazebo `OdometryPublisher`（`/loc/gazebo` 真值位姿）。  
+驱动相关插件（`DiffDrive` / `MecanumDrive`）与 `JointStatePublisher` 在 `quadrover_control/urdf/drive_plugins.xacro` 中定义。
 
 ## ROS 话题（经 Gazebo 插件 / 传感器产生，由 quadrover_gazebo 桥接）
 
@@ -144,8 +126,8 @@ base_link
 
 | 话题 | 类型 | 方向 | 来源 |
 |------|------|------|------|
-| `/cmd_vel` | `geometry_msgs/Twist` | 订阅 | DiffDrive 插件 |
-| `/odom/wheel` | `nav_msgs/Odometry` | 发布 | DiffDrive 插件（`odom` → `base_link`） |
+| `/cmd_vel` | `geometry_msgs/Twist` | 订阅 | 轮驱插件（DiffDrive/MecanumDrive） |
+| `/odom/wheel` | `nav_msgs/Odometry` | 发布 | 轮驱插件（坐标系随 `drive_mode` 而异） |
 | `/loc/gazebo` | `nav_msgs/Odometry` | 发布 | OdometryPublisher 插件（`map` → `base_link` 真值） |
 | `/joint_states` | `sensor_msgs/JointState` | 发布 | JointStatePublisher 插件 |
 | `/imu/data` | `sensor_msgs/Imu` | 发布 | IMU 传感器 |
