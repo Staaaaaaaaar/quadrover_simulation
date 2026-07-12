@@ -1,6 +1,6 @@
 # Quadrover
 
-基于 **ROS 2 Humble** 与 **Gazebo Fortress** 的四轮移动机器人仿真环境，集成 LiDAR、IMU、RGB-D 相机，并支持多种 Gazebo 轮式驱动插件，适用于原生 Linux 下的传感器联调与导航算法开发。
+基于 **ROS 2 Humble** 与 **Gazebo Fortress** 的四轮移动机器人仿真环境，集成 LiDAR、IMU、RGB-D 相机与 Gazebo 差速驱动插件，适用于原生 Linux 下的传感器联调与导航算法开发。
 
 ## 功能概览
 
@@ -15,7 +15,7 @@
 | 包 | 说明 |
 |---|---|
 | `quadrover_description` | 模块化 xacro：底盘、传感器、Gazebo 插件 |
-| `quadrover_control` | 独立驱动子包：封装 Gazebo 轮式驱动插件与 `drive_mode` 配置 |
+| `quadrover_control` | 独立驱动子包：封装 Gazebo DiffDrive 插件 |
 | `quadrover_gazebo` | 世界文件、launch、RViz、ROS-GZ 桥接 |
 | `quadrover_bringup` | 高层 launch：`sim_example` |
 
@@ -75,34 +75,23 @@ ros2 launch quadrover_gazebo spawn_quadrover_sensors.launch.py rviz:=true gui:=t
 | `gui` | `false` | 是否打开 Gazebo GUI |
 | `rviz` | `false` | 是否启动 RViz2 |
 | `render_engine` | `ogre2` | 渲染后端（Fortress 默认） |
-| `drive_mode` | `diff_drive` | 驱动模式：`diff_drive`/`mecanum_drive` |
-| `publish_wheel_odom_tf` | `false` | 是否发布 `odom→base_link`（来自 `/odom/wheel`） |
-| `wheel_odom_frame_id` | `odom` | `/odom/wheel.header.frame_id` |
-| `wheel_base_frame_id` | `base_link` | `/odom/wheel.child_frame_id` |
 | `spawn_x/y/z` | 因场景而异 | 机器人初始位姿 |
 
 ### 位姿话题
 
-本仓库不维护 `map→odom`。轮式里程计由归一化节点统一发布，默认仅发布位姿话题；可按需启用 `odom→base_link` TF：
+本仓库**不维护** `map→odom` 或 `odom→base_link` TF，仅发布位姿话题供外部 odom/loc 融合节点使用：
 
 | 话题 | 类型 | 坐标系 | 说明 |
 |---|---|---|---|
-| `/odom/wheel` | `nav_msgs/Odometry` | `odom` → `base_link` | Gazebo 轮式驱动插件里程计（统一帧，仍有漂移） |
+| `/odom/wheel` | `nav_msgs/Odometry` | `odom` → `base_link` | Gazebo DiffDrive 轮式里程计（允许误差） |
 | `/loc/gazebo` | `nav_msgs/Odometry` | `map` → `base_link` | 仿真真值位姿 |
 
-`robot_state_publisher` 仍发布 URDF 定义的 `base_link` → 传感器 TF。若需轮式里程计 TF，可在 launch 参数中开启 `publish_wheel_odom_tf:=true`。
+`robot_state_publisher` 仍发布 URDF 定义的 `base_link` → 传感器 TF。
 
 ### 手动控制
 
 ```bash
 ros2 run teleop_twist_keyboard teleop_twist_keyboard
-```
-
-切换驱动模式示例：
-
-```bash
-ros2 launch quadrover_gazebo spawn_quadrover_sensors.launch.py \
-  drive_mode:=mecanum_drive
 ```
 
 ## ROS 话题

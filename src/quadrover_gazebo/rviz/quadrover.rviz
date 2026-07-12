@@ -1,11 +1,12 @@
 Panels:
   - Class: rviz_common/Displays
-    Help Height: 70
+    Help Height: 138
     Name: Displays
     Property Tree Widget:
-      Expanded: ~
+      Expanded:
+        - /Global Options1
       Splitter Ratio: 0.5
-    Tree Height: 625
+    Tree Height: 613
   - Class: rviz_common/Selection
     Name: Selection
   - Class: rviz_common/Tool Properties
@@ -36,7 +37,7 @@ Visualization Manager:
         Z: 0
       Plane: XY
       Plane Cell Count: 20
-      Reference Frame: base_link
+      Reference Frame: <Fixed Frame>
       Value: true
     - Class: rviz_default_plugins/TF
       Enabled: true
@@ -63,7 +64,7 @@ Visualization Manager:
       Name: TF
       Show Arrows: true
       Show Axes: true
-      Show Names: false
+      Show Names: true
       Tree:
         base_link:
           camera_link:
@@ -190,35 +191,55 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 6.5281901359558105
+      Distance: 9.03366470336914
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0
-        Y: 0
+        X: 0.3555000126361847
+        Y: 3.444401881769199e-13
         Z: 0.5
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.054999828338623
-      Target Frame: base_link
+      Pitch: 1.149999737739563
+      Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 1.3799995183944702
-    Saved: ~
+      Yaw: 1.4299994707107544
+    Saved:
+      - Class: rviz_default_plugins/Orbit
+        Distance: 9.03366470336914
+        Enable Stereo Rendering:
+          Stereo Eye Separation: 0.05999999865889549
+          Stereo Focal Distance: 1
+          Swap Stereo Eyes: false
+          Value: false
+        Focal Point:
+          X: 0.3555000126361847
+          Y: 3.444401881769199e-13
+          Z: 0.5
+        Focal Shape Fixed Size: true
+        Focal Shape Size: 0.05000000074505806
+        Invert Z Axis: false
+        Name: Orbit
+        Near Clip Distance: 0.009999999776482582
+        Pitch: 1.149999737739563
+        Target Frame: <Fixed Frame>
+        Value: Orbit (rviz)
+        Yaw: 1.4299994707107544
 Window Geometry:
   Depth Camera:
     collapsed: false
   Displays:
     collapsed: false
-  Height: 838
+  Height: 902
   Hide Left Dock: false
   Hide Right Dock: false
-  QMainWindow State: 000000ff00000000fd000000010000000000000156000002f4fc0200000006fb0000001800440065007000740068002000430061006d006500720061000000003d000002f40000002800fffffffb00000014005200470042002000430061006d006500720061000000003d000000650000002800fffffffb000000100044006900730070006c006100790073000000003d000002f4000000c900fffffffb0000001200530065006c0065006300740069006f006e00000001510000007c0000005c00fffffffb0000001e0054006f006f006c002000500072006f0070006500720074006900650073000000018a000000960000005c00fffffffb0000000a0056006900650077007300000001e000000151000000a400ffffff000004ca000002ec00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd0000000100000000000001f70000032cfc0200000006fb0000001800440065007000740068002000430061006d006500720061000000003d000002f40000002800fffffffb00000014005200470042002000430061006d006500720061000000003d000000650000002800fffffffb000000100044006900730070006c006100790073010000003d0000032c000000c900fffffffb0000001200530065006c0065006300740069006f006e00000001510000007c0000005c00fffffffb0000001e0054006f006f006c002000500072006f0070006500720074006900650073000000018a000000960000005c00fffffffb0000000a005600690065007700730000000243000000e6000000a400ffffff000003ce0000032c00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   RGB Camera:
     collapsed: false
   Selection:
@@ -227,6 +248,6 @@ Window Geometry:
     collapsed: false
   Views:
     collapsed: false
-  Width: 1226
-  X: 613
-  Y: 250
+  Width: 1483
+  X: 656
+  Y: 309

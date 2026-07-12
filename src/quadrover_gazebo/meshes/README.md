@@ -18,7 +18,6 @@
 ros2 launch quadrover_gazebo spawn_quadrover_sensors.launch.py \
   world:=$(ros2 pkg prefix quadrover_gazebo)/share/quadrover_gazebo/worlds/your_world.sdf \
   spawn_x:=0.0 spawn_y:=0.0 spawn_z:=0.23 \
-  drive_mode:=diff_drive \
   gui:=true rviz:=true
 ```
 

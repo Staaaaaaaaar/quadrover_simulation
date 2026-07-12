@@ -8,7 +8,7 @@
 | 构建类型 | ament_cmake |
 | 描述 | 四轮洞穴探索机器人的 URDF/xacro 描述 |
 
-本包定义 Quadrover 的运动学树、物理属性与 Gazebo 传感器。驱动插件已独立拆分到 `quadrover_control` 子包，通过 `drive_mode` 进行选择。
+本包定义 Quadrover 的运动学树、物理属性与 Gazebo 传感器。驱动插件已独立拆分到 `quadrover_control` 子包，由主 URDF 直接 include。
 
 ## 文件结构
 
@@ -35,19 +35,14 @@ quadrover_description/
 - `joint_state_publisher`
 - `rviz2`
 
-## xacro 参数
+## xacro 入口
 
-主入口 `quadrover.urdf.xacro` 接受以下参数：
-
-| 参数 | 默认值 | 说明 |
-|------|--------|------|
-| `drive_mode` | `diff_drive` | 驱动模式（由 `quadrover_control` 提供） |
+主入口 `quadrover.urdf.xacro` 无驱动模式参数，固定 include `quadrover_control/urdf/drive_plugins.xacro`（DiffDrive + JointStatePublisher）。
 
 **xacro 调用示例：**
 
 ```bash
-xacro src/quadrover_description/urdf/quadrover.urdf.xacro \
-  drive_mode:=mecanum_drive
+xacro src/quadrover_description/urdf/quadrover.urdf.xacro
 ```
 
 ## 运动学树（TF 树）
@@ -118,7 +113,7 @@ base_link
 ### gazebo_plugins.xacro
 
 仅包含 Gazebo `OdometryPublisher`（`/loc/gazebo` 真值位姿）。  
-驱动相关插件（`DiffDrive` / `MecanumDrive`）与 `JointStatePublisher` 在 `quadrover_control/urdf/drive_plugins.xacro` 中定义。
+驱动相关插件（`DiffDrive`、`JointStatePublisher`）在 `quadrover_control/urdf/drive_plugins.xacro` 中定义。
 
 ## ROS 话题（经 Gazebo 插件 / 传感器产生，由 quadrover_gazebo 桥接）
 
@@ -126,8 +121,8 @@ base_link
 
 | 话题 | 类型 | 方向 | 来源 |
 |------|------|------|------|
-| `/cmd_vel` | `geometry_msgs/Twist` | 订阅 | 轮驱插件（DiffDrive/MecanumDrive） |
-| `/odom/wheel` | `nav_msgs/Odometry` | 发布 | 轮式里程计归一化节点输出（默认 `odom` → `base_link`） |
+| `/cmd_vel` | `geometry_msgs/Twist` | 订阅 | DiffDrive 插件 |
+| `/odom/wheel` | `nav_msgs/Odometry` | 发布 | DiffDrive 插件（`odom` → `base_link`） |
 | `/loc/gazebo` | `nav_msgs/Odometry` | 发布 | OdometryPublisher 插件（`map` → `base_link` 真值） |
 | `/joint_states` | `sensor_msgs/JointState` | 发布 | JointStatePublisher 插件 |
 | `/imu/data` | `sensor_msgs/Imu` | 发布 | IMU 传感器 |

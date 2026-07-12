@@ -1,4 +1,3 @@
-import json
 import os
 import re
 
@@ -16,8 +15,8 @@ from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 
 
-def _bridge_arguments(drive_mode):
-    args = [
+def _bridge_arguments():
+    return [
         '/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock',
         '/loc/gazebo@nav_msgs/msg/Odometry[gz.msgs.Odometry',
         '/imu/data@sensor_msgs/msg/Imu[gz.msgs.IMU',
@@ -28,15 +27,8 @@ def _bridge_arguments(drive_mode):
         '/camera/depth/camera_info@sensor_msgs/msg/CameraInfo[gz.msgs.CameraInfo',
         '/cmd_vel@geometry_msgs/msg/Twist]gz.msgs.Twist',
         '/joint_states@sensor_msgs/msg/JointState[gz.msgs.Model',
+        '/odom/wheel@nav_msgs/msg/Odometry[gz.msgs.Odometry',
     ]
-    if drive_mode == 'mecanum_drive':
-        # Fortress mecanum drive publishes OdometryWithCovariance on this topic.
-        args.append(
-            '/model/quadrover/odometry_with_covariance@nav_msgs/msg/Odometry[gz.msgs.OdometryWithCovariance'
-        )
-    else:
-        args.append('/odom/wheel@nav_msgs/msg/Odometry[gz.msgs.Odometry')
-    return args
 
 
 def _read_world_name(world_path):
@@ -48,26 +40,6 @@ def _read_world_name(world_path):
     return 'default'
 
 
-def _load_drive_mode_profiles():
-    pkg_quadrover_control = get_package_share_directory('quadrover_control')
-    profile_path = os.path.join(pkg_quadrover_control, 'config', 'drive_modes.json')
-    with open(profile_path, encoding='utf-8') as profile_file:
-        return json.load(profile_file)
-
-
-def _resolve_drive_config(context):
-    drive_mode = LaunchConfiguration('drive_mode').perform(context)
-
-    profiles = _load_drive_mode_profiles()
-    if drive_mode not in profiles:
-        available_modes = ', '.join(sorted(profiles.keys()))
-        raise RuntimeError(
-            f'Unsupported drive_mode "{drive_mode}". Available: {available_modes}'
-        )
-
-    return drive_mode
-
-
 def _launch_setup(context, *args, **kwargs):
     pkg_ros_gz_sim = get_package_share_directory('ros_gz_sim')
 
@@ -77,18 +49,12 @@ def _launch_setup(context, *args, **kwargs):
         world_name = _read_world_name(world)
 
     use_sim_time = LaunchConfiguration('use_sim_time').perform(context) == 'true'
-    drive_mode = _resolve_drive_config(context)
     spawn_z = LaunchConfiguration('spawn_z').perform(context)
     spawn_x = LaunchConfiguration('spawn_x').perform(context)
     spawn_y = LaunchConfiguration('spawn_y').perform(context)
     rviz_enabled = LaunchConfiguration('rviz').perform(context) == 'true'
     gui_enabled = LaunchConfiguration('gui').perform(context) == 'true'
     render_engine = LaunchConfiguration('render_engine').perform(context)
-    publish_wheel_odom_tf = (
-        LaunchConfiguration('publish_wheel_odom_tf').perform(context) == 'true'
-    )
-    wheel_odom_frame_id = LaunchConfiguration('wheel_odom_frame_id').perform(context)
-    wheel_base_frame_id = LaunchConfiguration('wheel_base_frame_id').perform(context)
 
     quadrover_description = Command([
         'xacro ',
@@ -97,7 +63,6 @@ def _launch_setup(context, *args, **kwargs):
             'urdf',
             'quadrover.urdf.xacro',
         ]),
-        f' drive_mode:={drive_mode}',
     ])
 
     render_flags = f'--render-engine {render_engine}'
@@ -105,16 +70,6 @@ def _launch_setup(context, *args, **kwargs):
         gz_args = f'-r {render_flags} {world}'
     else:
         gz_args = f'-r -s --headless-rendering {render_flags} {world}'
-
-    bridge_remappings = [
-        ('/lidar/scan/points', '/lidar/points'),
-    ]
-    if drive_mode == 'mecanum_drive':
-        bridge_remappings.append(
-            ('/model/quadrover/odometry_with_covariance', '/odom/wheel_raw')
-        )
-    else:
-        bridge_remappings.append(('/odom/wheel', '/odom/wheel_raw'))
 
     nodes = [
         IncludeLaunchDescription(
@@ -154,23 +109,9 @@ def _launch_setup(context, *args, **kwargs):
         Node(
             package='ros_gz_bridge',
             executable='parameter_bridge',
-            arguments=_bridge_arguments(drive_mode),
-            remappings=bridge_remappings,
+            arguments=_bridge_arguments(),
+            remappings=[('/lidar/scan/points', '/lidar/points')],
             parameters=[{'use_sim_time': use_sim_time}],
-            output='screen',
-        ),
-        Node(
-            package='quadrover_gazebo',
-            executable='wheel_odom_normalizer.py',
-            name='wheel_odom_normalizer',
-            parameters=[{
-                'use_sim_time': use_sim_time,
-                'input_topic': '/odom/wheel_raw',
-                'output_topic': '/odom/wheel',
-                'odom_frame_id': wheel_odom_frame_id,
-                'base_frame_id': wheel_base_frame_id,
-                'publish_tf': publish_wheel_odom_tf,
-            }],
             output='screen',
         ),
     ]
@@ -209,26 +150,6 @@ def generate_launch_description():
             'world_name',
             default_value='',
             description='Gazebo world name (auto-detected from SDF when empty)',
-        ),
-        DeclareLaunchArgument(
-            'drive_mode',
-            default_value='diff_drive',
-            description='Drive profile from quadrover_control',
-        ),
-        DeclareLaunchArgument(
-            'publish_wheel_odom_tf',
-            default_value='false',
-            description='Publish TF from wheel odometry (odom->base_link)',
-        ),
-        DeclareLaunchArgument(
-            'wheel_odom_frame_id',
-            default_value='odom',
-            description='Frame id for /odom/wheel header.frame_id',
-        ),
-        DeclareLaunchArgument(
-            'wheel_base_frame_id',
-            default_value='base_link',
-            description='Frame id for /odom/wheel child_frame_id',
         ),
         DeclareLaunchArgument('spawn_z', default_value='0.23'),
         DeclareLaunchArgument('spawn_x', default_value='0.0'),

@@ -1,10 +1,7 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="quadrover">
 
-  <xacro:arg name="drive_mode" default="diff_drive"/>
-
   <xacro:property name="wheel_joint_type" value="continuous"/>
-  <xacro:property name="drive_mode" value="$(arg drive_mode)"/>
   <xacro:property name="chassis_length" value="0.6"/>
 
   <xacro:include filename="chassis.xacro"/>

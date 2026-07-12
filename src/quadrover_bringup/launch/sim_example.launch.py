@@ -29,10 +29,6 @@ def generate_launch_description():
         DeclareLaunchArgument('spawn_x', default_value='0.0'),
         DeclareLaunchArgument('spawn_y', default_value='0.0'),
         DeclareLaunchArgument('spawn_z', default_value='0.23'),
-        DeclareLaunchArgument('drive_mode', default_value='diff_drive'),
-        DeclareLaunchArgument('publish_wheel_odom_tf', default_value='false'),
-        DeclareLaunchArgument('wheel_odom_frame_id', default_value='odom'),
-        DeclareLaunchArgument('wheel_base_frame_id', default_value='base_link'),
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
                 os.path.join(pkg_quadrover_gazebo, 'launch', 'spawn_quadrover_sensors.launch.py'),
@@ -46,10 +42,6 @@ def generate_launch_description():
                 'spawn_x': LaunchConfiguration('spawn_x'),
                 'spawn_y': LaunchConfiguration('spawn_y'),
                 'spawn_z': LaunchConfiguration('spawn_z'),
-                'drive_mode': LaunchConfiguration('drive_mode'),
-                'publish_wheel_odom_tf': LaunchConfiguration('publish_wheel_odom_tf'),
-                'wheel_odom_frame_id': LaunchConfiguration('wheel_odom_frame_id'),
-                'wheel_base_frame_id': LaunchConfiguration('wheel_base_frame_id'),
             }.items(),
         ),
     ])

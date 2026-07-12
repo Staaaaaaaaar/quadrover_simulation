@@ -4,7 +4,7 @@
 
 ## 工作空间概览
 
-基于 **ROS 2 Humble** + **Gazebo Fortress**（`ros_gz`）的四轮移动机器人仿真环境，集成 3D LiDAR、IMU、RGB-D 相机，适用于传感器联调与导航算法开发。底盘驱动由 **quadrover_control** 独立子包提供（`DiffDrive` / `MecanumDrive`）；位姿以话题形式发布（`/odom/wheel`、`/loc/gazebo`），不维护 `map→odom`，`odom→base_link` 可按参数开启。
+基于 **ROS 2 Humble** + **Gazebo Fortress**（`ros_gz`）的四轮移动机器人仿真环境，集成 3D LiDAR、IMU、RGB-D 相机，适用于传感器联调与导航算法开发。底盘驱动由 **quadrover_control** 独立子包提供（Gazebo `DiffDrive`）；位姿以话题形式发布（`/odom/wheel`、`/loc/gazebo`），不维护 `map→odom` 或 `odom→base_link` TF。
 
 ## 包依赖关系
 
@@ -12,7 +12,7 @@
 quadrover_bringup                    ← 顶层入口（场景 launch）
     └── quadrover_gazebo             ← Gazebo 仿真、桥接、世界文件
             ├── quadrover_description   ← URDF/xacro Quadrover 模型
-            └── quadrover_control       ← drive_mode 驱动预设
+            └── quadrover_control       ← DiffDrive 驱动插件
 ```
 
 ## 各包文档
@@ -20,7 +20,7 @@ quadrover_bringup                    ← 顶层入口（场景 launch）
 | 包 | 文档 | 职责 |
 |----|------|------|
 | `quadrover_bringup` | [quadrover_bringup.md](quadrover_bringup.md) | 高层场景 launch（example） |
-| `quadrover_control` | [quadrover_control.md](quadrover_control.md) | 四轮驱动模式预设与配置入口 |
+| `quadrover_control` | [quadrover_control.md](quadrover_control.md) | DiffDrive 驱动插件封装 |
 | `quadrover_description` | [quadrover_description.md](quadrover_description.md) | 模块化 URDF/xacro Quadrover 描述 |
 | `quadrover_gazebo` | [quadrover_gazebo.md](quadrover_gazebo.md) | Gazebo 世界、launch、ROS-GZ 桥接 |
 
@@ -34,8 +34,8 @@ quadrover_bringup                    ← 顶层入口（场景 launch）
 
 | 话题 | 类型 | 方向 | 来源 |
 |------|------|------|------|
-| `/cmd_vel` | `geometry_msgs/Twist` | 订阅 | Gazebo 轮驱插件（DiffDrive/MecanumDrive） |
-| `/odom/wheel` | `nav_msgs/Odometry` | 发布 | 轮式里程计归一化节点（默认 `odom` → `base_link`） |
+| `/cmd_vel` | `geometry_msgs/Twist` | 订阅 | Gazebo DiffDrive 插件 |
+| `/odom/wheel` | `nav_msgs/Odometry` | 发布 | DiffDrive 插件（`odom` → `base_link`） |
 | `/loc/gazebo` | `nav_msgs/Odometry` | 发布 | Gazebo OdometryPublisher（`map` → `base_link` 真值） |
 | `/tf` | `tf2_msgs/TFMessage` | 发布 | robot_state_publisher（URDF 传感器链） |
 | `/joint_states` | `sensor_msgs/JointState` | 发布 | Gazebo JointStatePublisher |

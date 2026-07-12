@@ -2,9 +2,5 @@
   "diff_drive": {
     "description": "Standard two-side differential drive for most indoor robots.",
     "plugin": "gz::sim::systems::DiffDrive"
-  },
-  "mecanum_drive": {
-    "description": "Omnidirectional mecanum drive for holonomic motion.",
-    "plugin": "ignition::gazebo::systems::MecanumDrive"
   }
 }

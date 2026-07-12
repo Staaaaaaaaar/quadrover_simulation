@@ -2,9 +2,9 @@
 
 本文档介绍 Quadrover 仿真**运行时**的 ROS 节点、话题与 TF 结构，供联调与对接外部算法时查阅。
 
-适用 launch：`quadrover_gazebo/spawn_quadrover_sensors.launch.py` 及其上层封装（如 `quadrover_bringup` 下的场景 launch）。默认参数下 `drive_mode=diff_drive`；可切换为 `drive_mode=mecanum_drive`。`rviz:=true` 时额外启动 RViz2。
+适用 launch：`quadrover_gazebo/spawn_quadrover_sensors.launch.py` 及其上层封装（如 `quadrover_bringup` 下的场景 launch）。`rviz:=true` 时额外启动 RViz2。
 
-> 本仿真包不发布 `map→odom`。`/odom/wheel` 统一为 `odom→base_link`；是否发布这条 TF 由 launch 参数 `publish_wheel_odom_tf` 控制（默认关闭）。
+> 本仿真包不发布 `map→odom` 或 `odom→base_link` TF。`/odom/wheel` 由 Gazebo DiffDrive 直接发布并经桥接输出，坐标系为 `odom` → `base_link`。
 
 ## 进程架构
 
@@ -40,12 +40,11 @@
 
 ## ROS 节点
 
-`drive_mode=diff_drive` 且 `rviz:=true` 时，`ros2 node list` 典型输出：
+`rviz:=true` 时，`ros2 node list` 典型输出：
 
 | 节点 | 包 | 一句话 |
 |------|-----|--------|
 | `/ros_gz_bridge` | `ros_gz_bridge` | 桥接 Gazebo 与 ROS 2，把仿真传感器、位姿和时钟暴露为 ROS 话题，并接收 `/cmd_vel` 驱动机器人。 |
-| `/wheel_odom_normalizer` | `quadrover_gazebo` | 统一轮式里程计帧到 `odom→base_link`，并可选从里程计同步发布同名 TF。 |
 | `/robot_state_publisher` | `robot_state_publisher` | 将 URDF 运动学链与 `/joint_states` 合成为 TF，让 LiDAR、相机等传感器拥有正确的空间参考。 |
 | `/rviz` | `rviz2` | 订阅仿真话题并图形化展示，便于开发阶段快速验证数据流与机器人状态。 |
 | `/transform_listener_impl_*` | （RViz 内部） | RViz 内置的 TF 查询客户端，用于在可视化中解析坐标变换，无需关注。 |
@@ -59,7 +58,7 @@
 | 订阅 | `/cmd_vel` | `geometry_msgs/Twist` |
 | 订阅 | `/clock` | `rosgraph_msgs/Clock` |
 | 发布 | `/clock` | `rosgraph_msgs/Clock` |
-| 发布 | `/odom/wheel_raw` | `nav_msgs/Odometry` |
+| 发布 | `/odom/wheel` | `nav_msgs/Odometry` |
 | 发布 | `/loc/gazebo` | `nav_msgs/Odometry` |
 | 发布 | `/joint_states` | `sensor_msgs/JointState` |
 | 发布 | `/imu/data` | `sensor_msgs/Imu` |
@@ -69,17 +68,7 @@
 | 发布 | `/camera/depth/image_raw` | `sensor_msgs/Image` |
 | 发布 | `/camera/depth/camera_info` | `sensor_msgs/CameraInfo` |
 
-> 所有 `drive_mode` 都会桥接 `/cmd_vel`、`/odom/wheel_raw`、`/joint_states`。
-
-### `/wheel_odom_normalizer`
-
-统一轮式里程计输出，屏蔽不同 Gazebo 轮驱插件的里程计 frame 差异。
-
-| 方向 | 话题 | 类型 |
-|------|------|------|
-| 订阅 | `/odom/wheel_raw` | `nav_msgs/Odometry` |
-| 发布 | `/odom/wheel` | `nav_msgs/Odometry` |
-| 发布 | `/tf`（可选） | `tf2_msgs/TFMessage` |
+> 桥接 `/cmd_vel`、`/odom/wheel`、`/joint_states` 以及传感器话题。
 
 ### `/robot_state_publisher`
 
@@ -135,11 +124,11 @@ ros2 run teleop_twist_keyboard teleop_twist_keyboard
 | 属性 | 值 |
 |------|-----|
 | 类型 | `nav_msgs/Odometry` |
-| 发布者 | `/ros_gz_bridge`（← Gazebo DrivePlugin） |
+| 发布者 | `/ros_gz_bridge`（← Gazebo DiffDrive） |
 | 频率 | ~30 Hz（配置值；实测约 28 Hz） |
-| 坐标系 | `header.frame_id=odom`，`child_frame_id=base_link`（默认，可通过 launch 参数覆盖） |
+| 坐标系 | `header.frame_id=odom`，`child_frame_id=base_link` |
 
-**内容：** 轮式里程计位姿与速度。由轮驱插件根据轮速积分，**有累积漂移**。`diff_drive` 与 `mecanum_drive` 都先桥接为 `/odom/wheel_raw`，再由 `wheel_odom_normalizer` 统一输出 `/odom/wheel`。包含 `pose.pose`（位姿）、`twist.twist`（速度）；协方差当前均为 0。
+**内容：** 轮式里程计位姿与速度。由 DiffDrive 插件根据轮速积分，**有累积漂移**（仿真允许误差）。包含 `pose.pose`（位姿）、`twist.twist`（速度）；协方差当前均为 0。本包不将其转为 TF。
 
 #### `/loc/gazebo`
 
@@ -284,7 +273,7 @@ ros2 run teleop_twist_keyboard teleop_twist_keyboard
 
 ## TF 树
 
-默认情况下，仿真运行时 `/tf` 仅含 URDF 定义的本体链（不含 `map→odom`，`odom→base_link` 默认关闭）：
+默认情况下，仿真运行时 `/tf` 仅含 URDF 定义的本体链（不含 `map`、`odom` 帧）：
 
 ```
 base_link

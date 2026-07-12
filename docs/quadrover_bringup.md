@@ -44,10 +44,6 @@ quadrover_bringup/
 | `render_engine` | `ogre2` | Gazebo 渲染后端 |
 | `world` | `quadrover_gazebo/worlds/example.sdf` | 世界文件 |
 | `spawn_x/y/z` | `0.0 / 0.0 / 0.23` | 机器人生成位置 |
-| `drive_mode` | `diff_drive` | 驱动模式（来自 `quadrover_control`）：`diff_drive` / `mecanum_drive` |
-| `publish_wheel_odom_tf` | `false` | 是否发布 `odom→base_link` TF |
-| `wheel_odom_frame_id` | `odom` | `/odom/wheel.header.frame_id` |
-| `wheel_base_frame_id` | `base_link` | `/odom/wheel.child_frame_id` |
 
 **启动示例：**
 
@@ -76,8 +72,7 @@ ros2 launch quadrover_bringup sim_example.launch.py rviz:=true gui:=true
 2. `robot_state_publisher`
 3. `ros_gz_sim/create`（生成机器人模型）
 4. `ros_gz_bridge/parameter_bridge`（传感器与控制桥接）
-5. `quadrover_gazebo/wheel_odom_normalizer.py`（统一里程计帧，可选发布 TF）
-6. RViz2（可选）
+5. RViz2（可选）
 
 ## 节点
 
